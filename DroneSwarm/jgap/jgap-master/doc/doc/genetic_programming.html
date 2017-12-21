@@ -1,0 +1,938 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="description" content="Tutorial on how to utilize Genetic Programming with JGAP.">
+<meta name="keywords" content="java, genetic algorithms, framework, genetic programming, gp, population
+                   optimization, evolutionary, open source, genes, alleles, chromosomes">
+<link rel="stylesheet" href="../jgap.css" type="text/css">
+<title>Genetic Programming with JGAP</title>
+</head>
+
+<body class="documentText">
+
+<h1 class="docTitle">Genetic Programming with JGAP</h1>
+<a class="homeLink" href="index.html">
+
+<p align="center">[Documentation Index]</a> </p>
+
+<hr>
+
+<p class="text"><b>Genetic Programming (GP)</b> is supposed to be introduced by John
+Koza. GP is sort of different to <b> Genetic Algorithms (GA)</b> as GP is more complex
+than GA. GP is about evolving programs with a given set of commands and an <b>unknown
+structure</b> (GA = known structure). Each
+command is assigned a number of parameters. That way, programs can be
+constructed. They are represented internally as a tree. But you do not have to
+cope with the internal representation. For you it is only important to know that
+you can write sort of programs. Each program contains only those commands and <a href="../../javadoc/3.4.4/org/jgap/gp/terminal/package-summary.html">
+terminals</a> (such as numbers or boolean values) that you define to be used! It is
+even possible evolving full-blown Java programs (see the <a href="http://jgap.sourceforge.net/doc/robocode/robocode.html">Robocode
+example</a>). </p>
+
+<p class="text">GP was introduced with JGAP 3.0. This document presents some useful information about how to utilize JGAP for GP. </p>
+
+<h3 class="subheader">JGAP's Philosophy</h3>
+
+<p class="text">The main philosophy that was setup before extending JGAP towards
+GP was to reach the goal by adding parts to GA to get GP. Thus: GA + x =GP, with
+x being the added parts.
+ </p>
+
+<h3 class="subheader">About GP Programs: A head start</h3>
+
+<p class="subheader">A GP Program is represented as a tree with one root node.
+The root node has child nodes and each child node could potentially have
+additional child nodes. The following picture denotes this situation:</p>
+
+<p class="subheader"><img border="0" src="GP_Entities.png" width="960" height="720">&nbsp;&nbsp;</p>
+
+<p class="subheader">In the picture you can identify&nbsp; the two functions Add
+and Abs. Add has two children of type integer and returns a value of type
+integer. Abs has one child of type integer and returns a value of type integer.
+Please note that the return type of the root node is equal to the return type of
+the whole program!</p>
+
+<p class="subheader">The picture additionally shows different possible
+arrangements of some functions and terminals.</p>
+
+<h3 class="subheader">Getting your hands on it</h3>
+
+<p class="text">To get a feeling of how to implement your GP-Program with JGAP,
+please have a look at the example located in class&nbsp;<i>examples.gp.MathProblem</i>.
+This example tries to find a formula for a given truth table (X/Y value pairs)
+and a given set of operators (such as +, -, * etc). The mentioned example class
+also contains a fitness function named <i>FormulaFitnessFunction</i>. More
+complex examples can be found in classes <i><a href="../javadoc/3.4.4/examples/gp/Fibonacci.html">examples.gp.Fibonacci</a> </i>and in <i><a href="../javadoc/3.4.4/examples/gp/anttrail/AntTrailProblem.html">examples.gp.anttrail.AntTrailProblem</a></i>.
+ </p>
+
+<p class="text">The math example at a glance (after that the steps are explained
+in detail) :
+ </p>
+
+<p class="text"><b>1. Create configuration</b>
+ </p>
+
+<p class="Listing">
+<tt>
+  /**<br>
+  &nbsp;* Starts the example<br>
+  &nbsp;* @param args ignored<br>
+  &nbsp;* @throws Exception<br>
+  &nbsp;*/<br>
+  public static void main(String[] args) throws Exception {<br>
+&nbsp; GPConfiguration config = new GPConfiguration();<br>
+  &nbsp; config.setGPFitnessEvaluator(new DeltaGPFitnessEvaluator());<br>
+&nbsp; config.setMaxInitDepth(6);<br>
+&nbsp; config.setPopulationSize(100);<br>
+&nbsp; config.setFitnessFunction(new MathProblem.FormulaFitnessFunction());<br>
+&nbsp; ... // continued below<br>
+
+</tt>
+ </p>
+
+<p class="text"><b>2. Create initial Genotype (continued from above method <i>main</i>):</b> </p>
+
+<p class="Listing">    
+<tt>&nbsp; GPGenotype gp = create(config);<br>
+}
+<br>
+<br>
+<br>
+  public static GPGenotype create(GPConfiguration a_conf) throws InvalidConfigurationException {<br>
+&nbsp; Class[] types = {<br>
+&nbsp;&nbsp;&nbsp; CommandGene.FloatClass};<br>
+&nbsp; Class[][] argTypes = {<br>
+&nbsp;&nbsp;&nbsp; {}<br>
+&nbsp; };<br>
+&nbsp; // Define the commands and terminals the GP is allowed to use.<br>
+&nbsp; // -----------------------------------------------------------<br>
+&nbsp; CommandGene[][] nodeSets = {<br>
+  &nbsp;&nbsp;&nbsp; {<br>
+  &nbsp;&nbsp;&nbsp; vx = Variable.create(a_conf, "X", CommandGene.FloatClass),<br>
+  &nbsp;&nbsp;&nbsp; new AddCommand(a_conf, CommandGene.FloatClass),<br>
+  &nbsp;&nbsp;&nbsp; new SubtractCommand(a_conf, CommandGene.FloatClass),<br>
+  &nbsp;&nbsp;&nbsp; new MultiplyCommand(a_conf, CommandGene.FloatClass),<br>
+  &nbsp;&nbsp;&nbsp; new DivideCommand(a_conf, CommandGene.FloatClass),<br>
+  &nbsp;&nbsp;&nbsp; new SinCommand(a_conf, CommandGene.FloatClass),<br>
+  &nbsp;&nbsp;&nbsp; new CosCommand(a_conf, CommandGene.FloatClass),<br>
+  &nbsp;&nbsp;&nbsp; new ExpCommand(a_conf, CommandGene.FloatClass),<br>
+&nbsp;&nbsp;&nbsp; // Use terminal with possible value from 2.0 to 10.0 decimal<br>
+&nbsp;&nbsp;&nbsp; new Terminal(conf, CommandGene.FloatClass, 2.0d, 10.0d, false),<br>
+&nbsp; &nbsp; }<br>
+  &nbsp; };<br>
+  &nbsp; Random random = new Random();<br>
+  &nbsp; // Randomly initialize function data (X-Y table) for x^4+x^3+x^2+x.<br>
+&nbsp; // This is problem-specific and not necessary in other cases.<br>
+&nbsp; // ----------------------------------------------------------------<br>
+  &nbsp; for (int i = 0; i &lt; 20; i++) {<br>
+  &nbsp;&nbsp;&nbsp; float f = 2.0f * (random.nextFloat() - 0.5f);<br>
+  &nbsp;&nbsp;&nbsp; x[i] = new Float(f);<br>
+  &nbsp;&nbsp;&nbsp; y[i] = f * f * f * f + f * f * f + f * f - f;<br>
+  &nbsp;&nbsp;&nbsp; System.out.println(i + ") " + x[i] + "   " + y[i]);<br>
+  &nbsp; }<br>
+  &nbsp; // Create genotype with initial population.<br>
+&nbsp; // Allow max. 100 nodes within one program.<br>
+&nbsp; // ----------------------------------------<br>
+  &nbsp; return randomInitialGenotype(a_conf, types, argTypes, nodeSets, 100,
+  true);<br>
+  }
+</tt> </p>
+
+<p class="text"><b>3. Start the evolution and output the result: (continued in above method <i>main</i>):&nbsp;</b> </p>
+
+<p class="Listing">    <tt>// Do 100 evolutions in a row.<br>
+// ---------------------------<br>
+&nbsp; gp.evolve(100);<br>
+// Output best solution found.<br>
+// ---------------------------<br>
+gp.outputSolution(gp.getAllTimeBest());<br>
+<br>
+    } // end of method &quot;main&quot;
+<br>
+</tt> </p>
+
+<p class="text"><b>4. Optional: Implement your own functions and terminals</b> </p>
+
+<p class="text">Please have a look at packages <i>org.jgap.gp.function</i>, <i>org.jgap.gp.terminal,</i><i>org.jgap.gp.function</i>
+and <i> examples.gp.anttrail</i> for available GP functions and terminals. There you can
+see how to implement your own classes and use them in the above step 2 during
+setup. </p>
+
+<p class="text">You can benefit from looking at the examples mentioned above. Go
+for the code and you'll get a better feeling. It's very easy using JGAP for GP! </p>
+
+<h3 class="subheader">Digging into detail </h3>
+
+<p class="text">Now as promised, the steps explained in more detail. If you want
+to get a quick overview of the JGAP classes involved into GP, please see the <a href="#overviewClasses">end
+of the document</a>. </p>
+
+<p class="text">The
+documentation below refers to the example above, corresponding with the step
+number: </p>
+
+<p class="text"><b>1. Create configuration</b> </p>
+
+<p class="text">At first, a JGAP configuration for GP is created and setup: </p>
+
+<p class="Listing">
+<tt>
+&nbsp; GPConfiguration config = new GPConfiguration();<br>
+  &nbsp; config.setGPFitnessEvaluator(new DeltaGPFitnessEvaluator());<br>
+&nbsp; config.setMaxInitDepth(6);<br>
+&nbsp; config.setPopulationSize(100);<br>
+&nbsp; config.setFitnessFunction(new MathProblem.FormulaFitnessFunction());<br>
+
+</tt>
+ </p>
+
+<p class="text">The parameters used are: </p>
+
+<ul>
+  <li>
+    <p class="text">&nbsp;fitness evaluator: the delta fitness evaluator gives
+    lower fitness values a better ranking as the fitness value is seen as a
+    defect rate. If you want to see the fitness value as a success rate,
+    instead, please use the DefaultGPFitnessEvaluator!</li>
+  <li>
+    <p class="text">The maximum depth of a GP program on initialization is set
+    to six. Consider a GP program. It is represented as a tree. The maximum
+    number of children of the top node (which has depth zero) is six, resulting
+    in a maximum depth of six. Too high values may result in bad performance of
+    even a memory overflow. Six is a good value for our example. In more complex
+    examples, maybe use a maximum of, say, 12.</li>
+  <li>
+    <p class="text">The population size, i.e. the number of coexisting GP
+    programs, is set to 100. This already is a quite high value as each program
+    consumes time and memory resources! If programs are getting bigger (i.e.
+    having more children), time and memory consumption rises, too!</li>
+  <li>
+    <p class="text">Finally, the fitness function is set. It evaluates each GP
+    program, which is also called an individuum. Please notice: The fitness
+    function ALWAYS is specific to your problem, there is no common fitness
+    function! You have to study the examples to get an idea about the
+    implementation of it (later on, there will be some additional
+    documentation).</li>
+</ul>
+<p class="text">The fitness function can be found in the JGAP code base in the
+example class MathProblem.
+<p class="text"><b>2. Create initial Genotype</b></p>
+<p class="text"><a name="GPProgramReturnType"></a>The Genotype initialization and creation is done in method
+create, which is called from the main method. At first follows the
+initialization, divided into chunks, starting with:</p>
+<p class="Listing">
+<tt>
+&nbsp; Class[] types = {<br>
+&nbsp;&nbsp;&nbsp; CommandGene.FloatClass};<br>
+&nbsp; Class[][] argTypes = {<br>
+&nbsp;&nbsp;&nbsp; {}<br>
+&nbsp; };<br>
+</tt> &nbsp;</p>
+<p class="text">As you can see there are two array, both having one dimension
+and the same length, namely one. This is a must!
+<p class="text">The first array, types, defines the return type of the <a href="#subProgram"> sub
+programs</a>. In our example, we only have one sub
+program, thus the length of the arrays is one. The parameter
+CommandGene.FloatClass expresses that the return type is Float.Class. This is
+because CommandGene.FloatClass is just a convenient, speaking definition of
+Float.Class (it is equivalent).
+<p class="text">The second array, argTypes, defines the input type of so-called
+Automatically Defined Functions (ADF's). They are not important here. If you
+want to get insights about ADF's, please look at the MathProblem class.<p class="text">The
+following box shows the definition of the valid sets of commands (functions and terminals). This means: a GP program will be evolved randomly, but by using one or
+more of the commands defined in nodeSets, each command can be used more than
+once, potentially. Please notice, that the variable &quot;X&quot; is set in the
+fitness function to inject an input value! Also notice, that the last parameter
+of the variable denotes the return type of the variable, i.e Float.class (or:
+CommandGene.FloatClass). This is comparable&nbsp; to the declaration in array
+types, above in this step.
+<p class="Listing">
+<tt>
+&nbsp; <a name="commands"></a>// Define the commands and terminals the GP is allowed to use.<br>
+&nbsp; // -----------------------------------------------------------<br>
+&nbsp; CommandGene[][] nodeSets = {<br>
+  &nbsp;&nbsp;&nbsp; {<br>
+  &nbsp;&nbsp;&nbsp; vx = Variable.create(a_conf, "X", CommandGene.FloatClass),<br>
+  &nbsp;&nbsp;&nbsp; new AddCommand(a_conf, CommandGene.FloatClass),<br>
+  &nbsp;&nbsp;&nbsp; new SubtractCommand(a_conf, CommandGene.FloatClass),<br>
+  &nbsp;&nbsp;&nbsp; new MultiplyCommand(a_conf, CommandGene.FloatClass),<br>
+  &nbsp;&nbsp;&nbsp; new DivideCommand(a_conf, CommandGene.FloatClass),<br>
+  &nbsp;&nbsp;&nbsp; new SinCommand(a_conf, CommandGene.FloatClass),<br>
+  &nbsp;&nbsp;&nbsp; new CosCommand(a_conf, CommandGene.FloatClass),<br>
+  &nbsp;&nbsp;&nbsp; new ExpCommand(a_conf, CommandGene.FloatClass),<br>
+&nbsp;&nbsp;&nbsp; // Use terminal with possible value from 2.0 to 10.0 decimal<br>
+&nbsp;&nbsp;&nbsp; new Terminal(conf, CommandGene.FloatClass, 2.0d, 10.0d, false),<br>
+&nbsp; &nbsp; }<br>
+  &nbsp; };<br>
+</tt> 
+<p class="text">Each command used can either be a
+function or a terminal. A function has at least one input parameter whereas a
+terminal never has an input parameter. A terminal is a constant, like a number
+or a boolean value. You can find a lot of prefabricated functions and terminals
+in packages <i>org.jgap.gp.function</i> and&nbsp;<i>org.jgap.gp.terminal</i>.<p class="text"><b>Return
+Type, Child Type, and Type of the Declaring Class (Declaration Type)</b><p class="text">It is important to notice that each function or terminal must support at least
+one return type. E.g., that means for a terminal representing a number, it must
+at least support either a float, an integer, a double, a short or a byte number.
+It <i>can</i> support all of them, but <i>must </i>implement at least one. See <i>org.jgap.gp.terminal.Constant</i>
+for a simple example. In class <i>org.jgap.gp.terminal.Terminal</i>, there is a
+more complex example, with fixed numbers that can be mutated and thus have to be
+mapped to be within the specified bounds.<p class="text">Functions returning a
+number have to be setup in analogy: They can support multiple return types like
+int, float and double, but they must support at least one of them. With numbers
+it is easy to imagine: it is OK to return either a float value, say, 47.11f, or
+alternatively, the truncated integer value, 47. See class <i>org.jgap.gp.function.Add</i>
+for an example, look for the <i>execute_XXX</i> functions where the different
+return types are realized.<p class="text"><i><u><b><a name="returnType"></a>Return
+Type</b></u>: The type of the value a function or terminal returns. This could
+be virtually any class. The class itself is not interpreted, only its name.
+Meaning: functions and terminals with the same return type can be substituted in
+a GP program, because their outside interface (their return value) declares the
+same return type.</i><p class="text"><a name="Arity"></a>Functions have a number of input
+parameters, this is called the <b> arity</b> of the function. Arity two means: two input
+parameters. The arity is setup during construction of each function via its base
+class, also see the Add-class for example. To let JGAP know which functions or
+terminals may server as children for a parent function, the parent function
+declares the types of its children. The type of a child is called <b>input type</b>.
+A parent with input type X.class can have any function or terminal as child
+which in turn has a return type of X.class.<p class="text"><i><u><b><a name="inputType"></a>Input
+Type</b></u>: The type of the child a function accepts. This could be virtually
+any class. The class itself is not interpreted, only its name (as with return
+type). Input type and return type correspond: A parent function with the same
+input type as another function's or terminal's return type can mate: The latter
+mentioned function or terminal can be used as child for the parent function.</i><p class="text"><i><b><u><a name="declarationType"></a>Declaration
+Type</u></b>: The class a GP function or terminal is declared in (i.e., the name
+of the source file representing the function or terminal) is completely
+unimportant for matching parent and children! For the matching, only the
+above-mentioned return type and input type are important.</i><p class="text"><b><a name="getChildType">Overwriting
+of method getChildType</a></b><p class="text">A function can have input parameters with
+different types. Consider the IF-Statement (IF &lt;condition&gt; THEN
+&lt;command&gt;). The first parameter is a boolean value. Besides, number values
+could be supported, with a number bigger than zero being seen as true and all
+other numbers representing false. The second parameter is a void type. See class
+<i>
+org.jgap.gp.function.IfElse</i> (especially method getChildType) for an example of
+this extended type handling for children.<p class="text">As the fitness function should compare the results of the
+evolved GP program (i.e. a mathematical function!) with a truth table, we
+initialize this truth table once at the beginning with fixed, but random input
+numbers. Instead of these random numbers, it would be perfectly OK to use
+subsequent values from, say, 0 to 20: 
+<p class="Listing">
+<tt>
+  &nbsp; Random random = new Random();<br>
+  &nbsp; // Randomly initialize function data (X-Y table) for x^4+x^3+x^2+x.<br>
+&nbsp; // This is problem-specific and not necessary in other cases.<br>
+&nbsp; // ----------------------------------------------------------------<br>
+  &nbsp; for (int i = 0; i &lt; 20; i++) {<br>
+  &nbsp;&nbsp;&nbsp; float f = 2.0f * (random.nextFloat() - 0.5f);<br>
+  &nbsp;&nbsp;&nbsp; x[i] = new Float(f);<br>
+  &nbsp;&nbsp;&nbsp; y[i] = f * f * f * f + f * f * f + f * f - f;<br>
+  &nbsp;&nbsp;&nbsp; System.out.println(i + ") " + x[i] + "   " + y[i]);<br>
+  &nbsp; }<br>
+</tt> 
+<p class="text">The code in the following box returns the initialized genotype, using the
+above-discussed, initialized parameters. The last two parameters are as follows.
+The number 100 is the maximum number of nodes to reserve space for in memory for
+each GP program. If you have a program spanning a <b>full</b> binary tree with
+depth of six, then you&nbsp; would need 127 nodes (2^(n+1) - 1, n = 6). The last
+parameter, true, controls that the system outputs verbose messages. This does
+not influence evolution itself, but maybe useful for analyzing and reduces speed
+a bit.
+<p class="Listing">
+<tt>
+  &nbsp; return randomInitialGenotype(a_conf, types, argTypes, nodeSets, 100,
+  true);
+</tt>  
+<p class="text"><b>3. Start the evolution</b>
+<p class="text">This is easy, see the code in step 3 at the beginning. It is
+self-explanatory.
+<p class="text"><b>4. Implement your own functions and terminals</b>
+<p class="text">For a good start, please see the functions and terminals in packages <i>org.jgap.gp.function</i>
+and&nbsp;<i>org.jgap.gp.terminal.</i>
+<p class="text">Take care of:
+<ul>
+  <li>
+    <p class="text">Arity: number of children of a function. A zero means: you
+    have a terminal with no children (see <a href="#Arity">above</a>).</li>
+  <li>
+    <p class="text">Input types: In case of arity greater than zero: For each
+    child declare the type of function or terminal you allow (see <a href="#in">above</a>)</li>
+  <li>
+    <p class="text">Return type: Each function or terminal has exactly one
+    return type, representing the type of the value it returns (see <a href="#returnType">above</a>)</li>
+  <li>
+    <p class="text">overwrite method getChildType if necessary: Consider this if
+    you have a function with more than one children, with at least two children
+    having different return types. See <a href="#getChildType">above paragraph</a>.</li>
+</ul>
+<p class="text">Besides: Name your class whatever you like. This is not
+important for matching parents and children (see <a href="#declarationType">above</a>).
+It is best to take an existing function or terminal as a template.</p>
+<p class="text">A further, quite
+complex example about GP is the Mona Lisa painting problem, see class <a href="../javadoc/3.4.4/examples/gp/monalisa/gui/GeneticDrawingApp.html"><i>examples.gp.monalisa.GeneticDrawingApp</i></a>.
+For your information, it might be useful to know that there is a corresponding
+GA example, which can be started with class <a href="../../javadoc/3.4.4/examples/monalisa/gui/GeneticDrawingApp.html"><i>examples.monalisa.GeneticDrawingApp</i></a>.<h3 class="subheader">FAQ</h3>
+<table border="0" cellspacing="1" width="95%">
+  <tr>
+    <td width="34" class="text" align="center"><b>Q</b></td>
+    <td width="1242" class="text">
+<span width="40"/><b>Crossing Over: </b>Are (custom)
+functions and terminals crossed over automatically or do I have to develop
+something?</span></td>
+  </tr>
+  <tr>
+    <td width="34" class="text" align="center"><b>A</b></td>
+    <td width="1242" class="text"><span width="40"/> They are crossed
+over <b>automatically</b>, because this is a tree operation which replaces one node
+with another. The replaced node has the same interface (return type) as the
+replacing node, so there is no problem. See class <i><a href="../../javadoc/3.4.4/org/jgap/gp/impl/BranchTypingCross.html">org.jgap.gp.impl.BranchTypingCross</a></i>,
+which is the standard operator for crossing over.</span></td>
+  </tr>
+  <tr>
+    <td width="34" class="text" align="center"></td>
+    <td width="1242" class="text"></td>
+  </tr>
+  <tr>
+    <td width="34" class="text" align="center"><span width="40"/> <b> Q</b></span></td>
+    <td width="1242" class="text"><span width="40"/> <b>Mutation</b>: Are ( custom)
+functions and terminals crossed over automatically or do I have to develop
+something?</span></td>
+  </tr>
+  <tr>
+    <td width="34" class="text" align="center"><span width="40"/> <b> A</b></span></td>
+    <td width="1242" class="text"><span width="40"/> In opposite the crossing
+      over, <b>mutation must be programmed</b> and can only happen if a function
+      or terminal implements interface org.jgap.gp.IMutateable, <a href="#mutation">see
+      below</a>.</span></td>
+  </tr>
+  <tr>
+    <td width="34" class="text" align="center"></td>
+    <td width="1242" class="text"></td>
+  </tr>
+  <tr>
+    <td width="34" class="text" align="center"><span width="40"/> <b>Q</b></span></td>
+    <td width="1242" class="text"><span width="40"/> <b>What is the arity of a
+      command?</b></span></td>
+  </tr>
+  <tr>
+    <td width="34" class="text" align="center"><span width="40"/> <b>A</b></span></td>
+    <td width="1242" class="text"><span width="40"/> Arity is the number of
+      children a function can have. A <b>terminal</b> is a command with arity
+      zero. The add function which sums up 43 input numbers has the arity of 43.</span></td>
+  </tr>
+  <tr>
+    <td width="34" class="text" align="center"></td>
+    <td width="1242" class="text"></td>
+  </tr>
+  <tr>
+    <td width="34" class="text" align="center"><span width="40"/> <b> Q</b></span></td>
+    <td width="1242" class="text"><span width="40"/> <b>What is strict program
+      creation?</b></span></td>
+  </tr>
+  <tr>
+    <td width="34" class="text" align="center"><span width="40"/> <b> A</b></span></td>
+    <td width="1242" class="text">This option can be set via <a href="../../javadoc/3.4.4/org/jgap/gp/impl/GPConfiguration.html#setStrictProgramCreation(boolean)"><i>GPConfiguration.setStrictProgramCreation(true)</i></a>.
+      <p>The meaning of &quot;strict program creation&quot; is the following:</p>
+      <p>A GP program must comply to a specification. The latter is given by the
+      configuration of available functions and terminals (commands).</p>
+      <p>Each command allows 0..n children of specific input types. Each command
+      has a single return type. A command is only valid if there is a possible
+      combination of commands regarding their accepted input types and the
+      return types given by other commands.</p>
+      <p>In strict program creation, there must be both a function and a
+      terminal for each input type specified by the set of given commands.</p>
+      <p>If we are not in strict program creation, then it is sufficient to have
+      at least a function _or_ a terminal that corresponds to a specific input
+      type. Besides, in strict program creation, it is only tried once to
+      randomly create a correct GP program. In the non-strict mode, it is tries
+      several times (which can be configured).</td>
+  </tr>
+</table>
+<h3 class="subheader">Advanced techniques</h3>
+<p class="subheader"><b><a name="subProgram"></a>Sub programs</b></p>
+<p class="subheader">The number of nodes (i.e. functions and terminals) ina GP
+program depends on the arity the parent elements have. The topmost parent
+element is the root node. Consider as an example the following set of commands
+to use:</p>
+<ul>
+  <li>
+    <p class="subheader"><a href="../../javadoc/3.4.4/org/jgap/gp/terminal/Terminal.html">Terminal</a> of type Integer, range [1..3] --&gt; As this
+    node is a terminal is has arity zero</li>
+  <li>
+    <p class="subheader">Function Add, accepting two children of type
+    Integer and returning an Integer --&gt; Two children means arity of two</li>
+  <li>
+    <p class="subheader">Variable X of type Integer --&gt; arity zero</li>
+</ul>
+<p class="subheader">With this set of commands and the requirement that the root
+node should return an Integer, one of the following GP programs could be evolved
+(besides many others, depending on the maximum depth you allow and the range of
+the terminal you specify):</p>
+<ul>
+  <li>
+    <p class="subheader">Add(2, 3)</li>
+  <li>
+    <p class="subheader">Add(3,1)</li>
+  <li>
+    <p class="subheader">Add(Add(1,1),3)</li>
+  <li>
+    <p class="subheader">Add(Add(2,3),2),1)</li>
+</ul>
+<p class="subheader">The following programs would not be possible:</p>
+<ul>
+  <li>
+    <p class="subheader">X = Add(2, 3)</li>
+  <li>
+    <p class="subheader">X = 3;Add(X, 2)</li>
+</ul>
+<p class="subheader">The first example is not possible as the return type of the
+root node (and thus of the whole GP Program is said to be Integer). The second
+program is not possible as the root node is variable X here, which does not
+allow any other command to follow (denoted by the semicolon as delimiter between
+commands).</p>
+<p class="subheader">To realize the first program (X=Add(2,3)) you have to
+declare the return type for the GP Program equivalent to the return type <a href="#GPProgramReturnType">you
+specify</a> when constructing the variable X<a href="#commands"> in your GP
+configuration</a>.</p>
+<p class="subheader">To get something like the second program (X = 3;Add(X, 2))
+you need a construct that allows chaining of commands, sort of a container for
+commands. Such container is nothing else than the invisible logical container in
+any Java function that returns a value. Each command in this function, except
+the return statement, has a return type of, say, void. Meaning: the statement x
+= 2 does not return something. It may (or ma not, like NOP - No Operation, the
+semicolon without statement in Java) only change the internal state of the
+program. Only the return statement in a function returns something. Thus, a
+container for GP commands allows a specific number of commands with void-type
+and a single command at the end return something. The number of commands allowed
+is controlled by the arity of the container. Say, if the container has arity
+four, then three commands with non-returning character can be included, followed
+by a single command tha returns something.</p>
+<p class="subheader">The name for such a logical container in JGAP is <b>sub
+program</b>, see class <i><a href="../../javadoc/3.4.4/org/jgap/gp/function/SubProgram.html">org.jgap.gp.function.SubProgram</a></i>.
+The type of the commands that are expected in the sub program, are specified
+when constructing it, with the last type given being the return type of the sub
+program. The sub program does nothing than sequentially executing all contained
+commands.</p>
+<p class="subheader">Consider the following configuration of GP commands:</p>
+<ul>
+  <li>
+    <p class="subheader">SubProgram with child types [Void, Integer] and arity
+    of two</li>
+  <li>
+    <p class="subheader">Terminal with range [1..3] and return type Integer</li>
+  <li>
+    <p class="subheader">Variable X with return type Void</li>
+  <li>
+    <p class="subheader">Function Add with child types [Integer, Integer] and
+    return type [Integer]</li>
+</ul>
+<p class="subheader">Then, the following GP programs may arise (only considered
+those that are possible now by using SubProgram):</p>
+<ul>
+  <li>
+    <p class="subheader">SubProgram[X=3;Add(X,4)]</li>
+  <li>
+    <p class="subheader">SubProgram[X=5;Add(4,Add(X,2))]</li>
+  <li>
+    <p class="subheader">...</li>
+</ul>
+<p class="subheader">The semicolon used above is the delimiter between the
+children of the sub program.</p>
+<p class="subheader"><b><a name="mutation"></a>Mutation</b></p>
+<p class="subheader">To make a function or terminal mutateable, you have to
+implement interface <i><a href="../../javadoc/3.4.4/org/jgap/gp/IMutateable.html">org.jgap.gp.IMutateable</a></i>.
+For an example, see function <i><a href="../../javadoc/3.4.4/org/jgap/gp/function/Add.html">org.jgap.gp.function.Add</a></i>.</p>
+<p class="subheader"><b>Cloning</b></p>
+<p class="subheader">Cloning is fundamental in evolution. A mutated function
+or terminal at a specific place in the GP program should not influence other
+functions or terminals of the same class (e.g. <i>org.jgap.gp.function.Add</i>).
+If cloning is not possible, then we are talking about many references to a
+single instance of a function or terminal. If cloning is possible, then each
+mutated instance is independent from the original.</p>
+<p class="subheader">To make a function or terminal cloneable, you should best
+implement interface <i><a href="../../javadoc/3.4.4/org/jgap/util/ICloneable.html">org.jgap.util.ICloneable</a></i>.
+For an example, see function <i><a href="../../javadoc/3.4.4/org/jgap/gp/function/Add.html">org.jgap.gp.function.Add</a></i>.</p>
+<h3 class="subheader"><a name="overviewClasses"></a>Overview of entities involved in the evolution process </h3>
+<table border="1" cellspacing=0 cellpadding=0>
+  <tr>
+    <td class="text"><b><i>Level: Class.Method</i></b></td>
+	<td class="text"><b><i>Description</i></b></td>
+	<td class="text"><b><i>Notes</i></b></td>
+  </tr>
+  <tr>
+	<td class="text"><b>0: <a href="../../javadoc/3.4.4/org/jgap/gp/impl/GPGenotype.html#evolve()"> GPGenotype.evolve</a></b></td>
+	<td class="text"><b>Overall: Evolve the population by one generation</b></td>
+	<td class="text">&nbsp;</td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">Step 1: Select two GP programs to be crossed over</td>
+	<td class="text">See <a href="../../javadoc/3.4.4/org/jgap/gp/impl/TournamentSelector.html">TournamentSelector</a>,
+      <a href="../../javadoc/3.4.4/org/jgap/gp/impl/FitnessProportionateSelection.html"> FitnessProportionateSelection</a></td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">Step 2: Cross over two GP programs</td>
+	<td class="text">See <a href="../../javadoc/3.4.4/org/jgap/gp/impl/BranchTypingCross.html"> BranchTypingCross</a></td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">Step 3: Randomly (instead of crossing over) do reproduction of GP programs</td>
+	<td class="text">Uses selection from step 1</td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">Step 4: Randomly add new GP programs</td>
+	<td class="text">See <a href="../../javadoc/3.4.4/org/jgap/gp/impl/GPPopulation.html">GPPopulation</a>, <a href="../../javadoc/3.4.4/org/jgap/gp/impl/DefaultProgramCreator.html"> DefaultProgramCreator</a></td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td><td class="text">&nbsp;</td><td class="text">&nbsp;</td>
+  </tr>
+  <tr>
+	<td class="text"><b>1: <a href="../../javadoc/3.4.4/org/jgap/gp/impl/GPPopulation.html#create(int, java.lang.Class[], java.lang.Class[][], org.jgap.gp.CommandGene[][], int[], int[], int, boolean, int, boolean[], int, org.jgap.gp.IProgramCreator)"> GPPopulation.create</a></b></td>
+	<td class="text"><b>Create a single GP program calling <a href="../../javadoc/3.4.4/org/jgap/gp/IProgramCreator.html"> IProgramCreator</a></b></td>
+	<td class="text">See <a href="../../javadoc/3.4.4/org/jgap/gp/impl/DefaultProgramCreator.html"> DefaultProgramCreator</a></td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td><td class="text">&nbsp;</td><td class="text">&nbsp;</td>
+  </tr>
+  <tr>
+	<td class="text"><b>2: <a href="../../javadoc/3.4.4/org/jgap/gp/impl/DefaultProgramCreator.html#create(org.jgap.gp.impl.GPConfiguration, int, java.lang.Class[], java.lang.Class[][], org.jgap.gp.CommandGene[][], int[], int[], int, int, boolean, int, boolean[])"> DefaultProgramCreator.create</a></b></td>
+	<td class="text"><b>Create a single GP program</b></td>
+	<td class="text">Implements <a href="../../javadoc/3.4.4/org/jgap/gp/IProgramCreator.html"> IProgramCreator</a></td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">1: Instantiates the GP program</td>
+	<td class="text">See constructor of <a href="../../javadoc/3.4.4/org/jgap/gp/impl/GPProgram.html"> GPProgram</a></td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">2: Fills the GP program with nodes</td>
+	<td class="text">See GPProgram.growOrFull</td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td><td class="text">&nbsp;</td><td class="text">&nbsp;</td>
+  </tr>
+  <tr>
+	<td class="text"><b>3: <a href="../../javadoc/3.4.4/org/jgap/gp/impl/GPProgram.html#growOrFull(int,%20boolean,%20int,%20boolean[],%20int)"> GPProgram.growOrFull</a></b></td>
+	<td class="text"><b>Initializes a GP program with nodes</b></td>
+	<td class="text">&nbsp;</td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">1: Construct as many nodes (=chromosomes) as needed</td>
+	<td class="text">See <a href="../../javadoc/3.4.4/org/jgap/gp/impl/ProgramChromosome.html"> ProgramChromosome</a></td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">1a: Instantiate a single <a href="../../javadoc/3.4.4/org/jgap/gp/impl/ProgramChromosome.html"> ProgramChromosome</a></td>
+	<td class="text">&nbsp;</td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">2: For all nodes</td>
+	<td class="text">&nbsp;</td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">2a: Grow the node by populating it with sub nodes</td>
+	<td class="text">See next section</td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">3: If cache enabled and program found in cache: read fitness; otherwise: calculate fitness of program</td>
+	<td class="text">&nbsp;</td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td><td class="text">&nbsp;</td><td class="text">&nbsp;</td>
+  </tr>
+  <tr>
+	<td class="text"><b>4: <a href="../../javadoc/3.4.4/org/jgap/gp/impl/ProgramChromosome.html#growOrFull(int,%20int,%20java.lang.Class,%20java.lang.Class[],%20org.jgap.gp.CommandGene[],%20boolean,%20int)"> ProgramChromosome.growOrFull</a></b></td>
+	<td class="text"><b>Initializes a node within a program</b></td>
+	<td class="text">&nbsp;</td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">1: If custom initialization strategy is registered, use it to preset the first node</td>
+	<td class="text">See <a href="../../javadoc/3.4.4/org/jgap/gp/IGPInitStrategy.html"> IGPInitStrategy</a></td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">2: Recursively build the node and its subtrees</td>
+	<td class="text">See next section</td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">3: Recalculate the depths of the nodes in the tree</td>
+	<td class="text">&nbsp;</td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td><td class="text">&nbsp;</td><td class="text">&nbsp;</td>
+  </tr>
+  <tr>
+	<td class="text"><b>5: <a href="../../javadoc/3.4.4/org/jgap/gp/impl/ProgramChromosome.html#growOrFullNode(int,%20int,%20java.lang.Class,%20int,%20org.jgap.gp.CommandGene[],%20org.jgap.gp.CommandGene,%20int,%20boolean,%20int,%20boolean)"> ProgramChromosome.growOrFullNode</a></b></td>
+	<td class="text"><b>Create a tree of nodes</b></td>
+	<td class="text">&nbsp;</td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">1: Select an appropriate node (<a href="../../javadoc/3.4.4/org/jgap/gp/CommandGene.html">CommandGene</a>)</td>
+	<td class="text">See same class, method <a href="../../javadoc/3.4.4/org/jgap/gp/impl/ProgramChromosome.html#selectNode(int,%20java.lang.Class,%20int,%20org.jgap.gp.CommandGene[],%20boolean,%20boolean)"> selectNode</a></td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">2: Validate node, if validator registered</td>
+	<td class="text">See <a href="../../javadoc/3.4.4/org/jgap/gp/INodeValidator.html"> INodeValidator</a></td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">3: Randomly mutate node if node supports this</td>
+	<td class="text">See <a href="../../javadoc/3.4.4/org/jgap/gp/IMutateable.html"> IMutateable</a></td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">4: If node is marked as unique, remove type of node from list of available functions</td>
+	<td class="text">See <a href="../../javadoc/3.4.4/org/jgap/gp/IUniqueCommand.html"> IUniqueCommand</a></td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">5: Clone node and add it to the tree of nodes</td>
+	<td class="text">&nbsp;</td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">6: Call self recursively (goto step 1 in this section) if nodes are missing</td>
+	<td class="text">End is reached if required depth of node tree is met</td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td><td class="text">&nbsp;</td><td class="text">&nbsp;</td>
+  </tr>
+  <tr>
+	<td class="text">0: Back in evolve</td>
+	<td class="text">5: Set evolved population as current</td>
+	<td class="text">&nbsp;</td>
+  </tr>
+  <tr>
+	<td class="text">&nbsp;</td>
+	<td class="text">6: Fire event GPGENOTYPE_EVOLVED_EVENT</td>
+	<td class="text">See <a href="../../javadoc/3.4.4/org/jgap/event/GeneticEvent.html"> GeneticEvent</a></td>
+  </tr>
+</table>
+
+<h3 class="subheader">The
+program flow in JGAP when creating a GP Program</h3>
+
+<p class="subheader">Please note that the line numbers are only to give an idea,
+they could change with JGAP versions published after this documentation.&nbsp;</p>
+<table>
+  <tbody>
+    <tr>
+      <td colSpan="12" class="text"><b><font face="Courier New">GPGenotype.randomInitialGenotype, line
+        218</font></b></td>
+    </tr>
+    <tr>
+      <td class="text"></td>
+      <td colSpan="11" class="text"><b><font face="Courier New">GPGenotype.randomInitialGenotype, line
+        259</font></b></td>
+    <tr>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td colSpan="10" class="text"><b><font face="Courier New">GPGenotype.randomInitialGenotype, line
+        310</font></b></td>
+    <tr>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td colSpan="9" class="text"><b><font face="Courier New">GPGenotype.randomInitialGenotype, line
+        355</font></b></td>
+    <tr>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td colSpan="8" class="text"><b><font face="Courier New">IPopulationCreator.initialize</font></b></td>
+    </tr>
+    <tr>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td colSpan="8" class="text">
+        <ul style="MARGIN-BOTTOM: 5px">
+          <li><font face="Courier New">Normally given by class
+            DefaultPopulationCreator</font></li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td colSpan="7" class="text"><b><font face="Courier New">GPPolulation.create(...),
+        line 235</font></b></td>
+    </tr>
+    <tr>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td colSpan="7" class="text">
+        <ul style="MARGIN-BOTTOM: 5px">
+          <li><font face="Courier New">Also called from
+            GPPolulation.create(...), line 207</font></li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td colSpan="6" class="text"><b><font face="Courier New">GPPolulation.create(...),
+        line 271 and GPPolulation.create(...), line 405</font></b></td>
+    </tr>
+    <tr>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td colSpan="6" class="text">
+        <ul style="MARGIN-BOTTOM: 5px">
+          <li><font face="Courier New">Here, the depth parameter for program
+            creation is determined by considering the minimum and maximum depth
+            allowed during program initialization. This setting is given in the
+            GP configuration object (class GPConfiguration)</font></li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td colSpan="5" class="text"><b><font face="Courier New">GPPolulation.create(...),
+        line 478</font></b></td>
+    </tr>
+    <tr>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td colSpan="4" class="text"><b><font face="Courier New">IProgramCreator.create(...)</font></b></td>
+    </tr>
+    <tr>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td colSpan="4" class="text">
+        <ul style="MARGIN-BOTTOM: 5px">
+          <li><font face="Courier New">Normally given by class
+            DefaultProgramCreator</font></li>
+        </ul>
+      </td>
+    </tr>
+    <tr>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td colSpan="3" class="text"><b><font face="Courier New">GPProgram.growOrFull,
+        line 160</font></b></td>
+    </tr>
+    <tr>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td colSpan="2" class="text"><b><font face="Courier New">ProgramChromosome.growOrFull,
+        line 235</font></b></td>
+    </tr>
+    <tr>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"><b><font face="Courier New">ProgramChromosome.growOrFullNode,
+        line 519</font></b></td>
+    </tr>
+    <tr>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text"></td>
+      <td class="text">
+        <ul style="MARGIN-BOTTOM: 5px">
+          <li><font face="Courier New">Calls itself recursively</font></li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 class="subheader">External Resources</h3>
+<ul>
+  <li>
+    <p class="subheader">About <a href="http://www.genetic-programming.org/" target="_blank">Genetic
+    Programming</a> by John Koza</li>
+  <li>
+    <p class="subheader"><a href="http://www.klaus-meffert.de/doc/monalisa.html" target="_blank">The
+    Mona Lisa Problem</a> for Genetic Programming (in German)</li>
+</ul>
+
+<p class="copyright">Copyright © 2006-2012 <a href="http://www.doktor-meffert.com" target="_blank"> Klaus
+Meffert</a>. All rights reserved. </p>
+
+<hr>
+<a class="homeLink" href="index.html">
+
+<p align="center">[Documentation Index]</a> <br>
+<a href="http://sourceforge.net/projects/jgap"><img
+src="http://sourceforge.net/sflogo.php?group_id=11618&amp;type=5" width="210" height="62"
+border="0" alt="SourceForge Logo"></a> </p>
+</body>
+</html>

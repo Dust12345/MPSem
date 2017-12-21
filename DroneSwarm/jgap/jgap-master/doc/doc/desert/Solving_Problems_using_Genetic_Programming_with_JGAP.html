@@ -1,0 +1,653 @@
+<html>
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=ProgId content=FrontPage.Editor.Document>
+<link rel="stylesheet" href="../../jgap.css" type="text/css">
+<title>Solving Problems using Genetic Programming with JGAP</title>
+</head>
+
+<body>
+
+<h1 class="docTitle">
+Solving Problems using Genetic Programming with JGAP
+</h1>
+<h3 class="subheader">Identifying Candidate Problems</h3>
+
+Genetic Programming has been applied to a wide variety of problems. In particular, Koza
+has
+demonstrated that many problems can be reformulated so that they share a
+similar software architecture and so that they can be solved with Genetic
+Programming techniques. This architecture consists of presenting the genetic programming component with a
+suite of inputs, running the inputs through a series of genetically generated
+programs, and then measuring the success of each program against the expected
+answer for the corresponding input. The
+process is repeated again and again until the success measure meets the exit
+criteria you’ve provided.
+<p align="center"><img border="0" src="image002.gif"><p/></p>
+<p>The first challenge is identifying an interesting problem and determining that the
+selected problem has a reasonable chance for success. The key characteristic about finding a
+genetic programming solution to a problem is that you are trading computer
+processing effort against human development effort. There are problems that can be developed with
+traditional programming that can be also solved with genetic programming. However, you may find in some cases that the
+effort to create the genetic programming software architecture above is equal
+to or greater than the effort to create the solution with traditional
+programming.<p/>
+
+However, you might receive by creating a genetic solution to a previously solved problem
+or a simple problem. I definitely learned about using JGAP by trying to solve a simple problem and to repeat a
+research result. This tutorial will start by identifying how to use JGAP to find programs using a previously solved
+genetic problem.<p/>
+
+</p>
+
+<h3 class="subheader">Problem Statement</h3>
+
+For this tutorial, we’ll repeat the solution that Koza found in his paper, <b><a href="http://citeseer.ist.psu.edu/194791.html" target="_blank">Evolution of Emergent Cooperative Behavior using
+Genetic Programming</a></b>. We’ll first solve this problem by carefully repeating the elements that
+Koza used in the JGAP system. This means that we’ll program Java classes that emulate the Lisp functions that Koza used
+in his paper. The intent of starting
+with this approach is that we can learn how to use JGAP with a problem that has
+a known solution. Once we’ve learned
+lessons about using JGAP by repeating this solution, then we can proceed to
+solving the problem with a more modern approach. At the current time, I’ve only implemented
+the lisp-like solution and it conversion of this solution to a more modern
+approach may be a exercise for the reader.
+
+<h3 class="subheader">Painted Desert / Ant Problem</h3>
+
+<p class=MsoNormal><span lang=EN-US style='mso-ansi-language:EN-US'>The problem
+consists of 10 ants in a 10x10 </span><span lang=EN-US style='font-size:10.0pt;
+font-family:TimesNewRoman;mso-bidi-font-family:TimesNewRoman;mso-ansi-language:
+EN-US'>toroidal</span><span lang=EN-US style='mso-ansi-language:EN-US'> grid
+with 10 black sand grains, 10 gray sand grains, and 10 striped sand
+grains.<span style='mso-spacerun:yes'> </span>The goal is to find a single
+program that when run on each ant, moves the grains of sands into the first
+three columns.</span></p>
+
+<p class=MsoNormal align="center"><img border="0" src="image004.gif"><span lang=EN-US style='mso-ansi-language:EN-US'><o:p></o:p></span></p>
+
+<p align="center">
+
+Starting map
+<p align="center"><img border="0" src="image006.gif"></p>
+<p align="center">Final map with sand aligned into columns</p>
+
+<h3 class="subheader">Selecting the Function Set</h3>
+
+<p class=MsoNormal><span lang=EN-US style='mso-ansi-language:EN-US'>For a
+problem with an unknown solution, we need to identify a set of functions that
+are sufficient to solve the problem.<span style='mso-spacerun:yes'> </span>For
+our problem, we are using the function set identified by Koza.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-indent:36.0pt'><span lang=EN-US
+style='mso-ansi-language:EN-US'>Terminals = {X, Y, Carrying, SandColor, GO_N,
+GO_E, GO_S, GO_W, MoveRandom, Pickup}<o:p></o:p></span></p>
+
+<p class=MsoNormal style='text-indent:36.0pt'><span lang=EN-US
+style='mso-ansi-language:EN-US'>Functions = {IfLessThanOrEqual, IfLessThanZero,
+IfDrop}<o:p></o:p></span></p>
+
+For the first solution, we’ll be mimicking the Lisp programming language by having each
+function return an integer value according to the rules in the paper.
+
+<h3 class="subheader">Creating the Domain classes</h3>
+
+<p class=MsoNormal><span lang=EN-US style='mso-ansi-language:EN-US'>I chose to
+implement the business logic in two classes.<span style='mso-spacerun:yes'> </span>The AntMap contains the knowledge of the locations and the set of
+ants.<span style='mso-spacerun:yes'> </span>It is responsible for loading the
+problem from a file location that contains the sand and ant locations.<span
+style='mso-spacerun:yes'> </span>It is also responsible for presenting the
+current state of the map on System.out.<span style='mso-spacerun:yes'> </span>The ant class is responsible for any ant specific behavior.<span
+style='mso-spacerun:yes'> </span>The approach of using the domain classes
+allowed unit testing the behavior outside of the JGAP framework and
+subsequently creating JGAP based unit tests to compare against the domain
+behavior.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span lang=EN-US style='mso-ansi-language:EN-US'>The domain
+classes can easily be modified to a more modern approach by changing the return
+values from int’s to void’s.<span style='mso-spacerun:yes'> </span>These
+procedures can then be mapped to appropriate genetic classes.<o:p></o:p></span></p>
+
+<h3 class="subheader">Creating the Function Set</h3>
+
+<p class=MsoNormal><span lang=EN-US style='mso-ansi-language:EN-US'>Now that we
+know the functions that we want to try for our program, we need to convert the
+functions into appropriate JGAP compatible classes.<span
+style='mso-spacerun:yes'> </span>For each terminal and each function listed
+above there is a corresponding Java class.<span style='mso-spacerun:yes'> </span>You can browse the classes in the paintedDesert package.<span
+style='mso-spacerun:yes'> </span>For this tutorial, we’ll focus on the key
+concepts to integrate with the JGAP framework.<o:p></o:p></span></p>
+
+<h3 class="subheader">Key JGAP concepts</h3>
+
+<p class=MsoNormal><span lang=EN-US style='mso-ansi-language:EN-US'>Class
+constructor – Each function class needs a constructor that extends from
+CommandGene.<span style='mso-spacerun:yes'> </span>Just like the JGAP anttrail
+example, we’ve created an AntCommand class to provide the common behavior
+related to retrieving the AntMap.Somewhere in the construction of the object, the instance must identify
+the number of arguments and the return type.<span style='mso-spacerun:yes'> </span>The number of arguments is the second argument in the CommandGene constructor
+and passed in as the a_arity of the argument.<span style='mso-spacerun:yes'> </span>The third argument in the constructor is the return type.<span
+style='mso-spacerun:yes'> </span>You should use the CommandGene static
+definitions of types; BooleanClass, IntegerClass, LongClass, FloatClass, and
+VoidClass.<span style='mso-spacerun:yes'> </span>The additional parameters </span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>int</span></b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'> a_subReturnType
+</span>and<span style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'> </span><b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:#7F0055;mso-ansi-language:EN-US'>final</span></b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'> </span><b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:#7F0055;mso-ansi-language:EN-US'>int</span></b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'>[] a_childSubTypes</span><span lang=EN-US> </span>have
+the following meaning:</p>
+
+<p class=MsoNormal>Consider a function that returns an integer number, thus it’s
+return type is declared as IntegerClass (or: Integer.class). Consider further,
+that you have a function that expects as parameter an Integer typed input. If for
+any reason you want to avoid that the first mentioned function returning
+IntegerClass is potentially used as input for the latter mentioned function,
+you can use different sub types. That means: The function returning IntegerClass
+could have a subReturnType of, say, 1, whereas the function receiving the input
+type IntegerClass could have a childSubType that is different from the
+subReturnType 1. For childSubtype you could use 2, e.g.</p>
+
+<p class=MsoNormal>In which cases does it make sense to avoid a function with fitting
+return type being the input of a function expecting this return type as input
+type? For example, if one function returns an integer number that represents a
+multiplier which could be in the range 2..5, and the other function expecting an
+integer number representing the index of an array, being in the range of 0..99.
+<span lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><o:p></o:p></span></p>
+
+<h3 class="subheader">Function Operations</h3
+
+The return type is used to determine which operation
+to call on the function class. A function class may support more than one return type. As mentioned above, the return type is
+identified in the constructor. The
+available functions are execute_boolean, execute_int, execute_long, execute_float,
+execute_double, execute_void and execute_object. For our Lisp-like sample solution, only
+execute_int is used.
+
+<h3 class="subheader">Arguments
+
+The allowable set of argument types are defined in the
+operation getChildType(IGPProgram a_ind, int a_chromNum).<span
+style='mso-spacerun:yes'> </span>The a_chrom_Num is the key argument.<span
+style='mso-spacerun:yes'> </span>It identifies the 0-based index of the
+arguments.<span style='mso-spacerun:yes'> </span>If you want to support
+combinations of argument types, then you’ll need to return the appropriate
+types.<span style='mso-spacerun:yes'> </span>For example, if the first
+argument is a VoidClass and the second argument needs to be an IntegerClass,
+you would want a method like:<o:p></o:p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:1'>      </span>if
+(a_chromNum
+== 0) {<o:p></o:p></span></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-spacerun:yes'>         </span>return
+CommandGene.VoidClass;<o:p></o:p></span></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-spacerun:yes'>      </span>} else
+if (a_chromNum == 1) {<o:p></o:p></span></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-spacerun:yes'>         </span><span style='font-size: 10.0pt; font-family: Courier New; color: black; mso-ansi-language: EN-US' lang="EN-US">r</span>eturn
+CommandGene.IntegerClass;<o:p></o:p></span></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-spacerun:yes'>      </span>} <o:p></o:p></span></p>
+
+<h3 class="subheader">String Representations for the Function Class</h3>
+
+There are two mechanisms where the system creates a string representation of
+the class. The first is the getName()
+function that returns the name of the function. This version is utilized in the various Exceptions thrown by the
+CommandGene class.
+
+The second mechanism provides feedback on the
+genetically derived function.<span style='mso-spacerun:yes'> </span>The
+IGPProgram instance function of toStringNorm(int a_startNode) is used to return
+a string representing the program the JGAP system has created.<span
+style='mso-spacerun:yes'> </span>It hierarchically calls the toString()
+operation to return the program representation.<o:p></o:p>
+
+<h3 class="subheader">Putting it all Together</h3>
+
+We’ve analyzed our problem and created our functions that are hopefully sufficient to
+solve the problem, now we need to add the logic that I called the “Process
+Control” in the first diagram.<p/>
+
+We’ll extend from the GPProblem class to create our PaintedDesertProblem class.<span
+style='mso-spacerun:yes'> </span>One of the key methods is the GPGenotype
+create() method.<span style='mso-spacerun:yes'> The </span> various options for controlling the learning
+process will be documented as soon as possible.<o:p></o:p>
+
+<h3 class="subheader">Running our Test</h3>
+
+<p class=MsoNormal><span lang=EN-US style='mso-ansi-language:EN-US'>The next
+step is to create a batch command or other mechanism to invoke the
+PaintedDesertProblem’s main subprogram.<span style='mso-spacerun:yes'> </span>However, if your experience is like mine, then the program runs and it
+doesn’t solve the problem as you had hoped.<o:p></o:p></span></p>
+
+<h3 class="subheader">Creating Unit Tests</h3>
+
+Like all programming exercises, it’s important to create unit tests.<span
+style='mso-spacerun:yes'> </span>You’re hoping to find the reason why JGAP
+didn’t solve the problem as you expected.<span style='mso-spacerun:yes'> </span>You could have made a mistake in the sufficiency test.<span
+style='mso-spacerun:yes'> </span>Can the available functions be combined to
+solve the problem?<span style='mso-spacerun:yes'> </span>Is your fitness
+function returning the proper results?<span style='mso-spacerun:yes'> </span>What actually is happening in that magic JGAP black box?<span
+style='mso-spacerun:yes'> </span>Is JGAP putting the program together in a way
+that you expected?<span style='mso-spacerun:yes'> </span>Did you find a bug in
+JGAP?<p/>
+
+<p class=MsoNormal><span lang=EN-US style='mso-ansi-language:EN-US'>Or you
+could have made a traditionally programming mistake?<span
+style='mso-spacerun:yes'> </span>In the <st1:place w:st="on">Painted Desert</st1:place>
+problem, the domain object approach allows for traditional junit testing on the
+Ant and AntMap classes.<span style='mso-spacerun:yes'> </span>Certainly, I had
+my mistakes in the domain classes.<span style='mso-spacerun:yes'> </span>The
+advantage of the existing solution approach is that in addition to the unit
+tests, I could write a program that demonstrated that the solution works.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span lang=EN-US style='mso-ansi-language:EN-US'>I’d like to
+add a note about the kinds of mistakes you can make.<span
+style='mso-spacerun:yes'> </span>I’ve identified that mistakes were made in
+the domain classes.<span style='mso-spacerun:yes'> </span>I put together some
+elemental unit test examples to work through the issues.<span
+style='mso-spacerun:yes'> </span>Certainly, the unit test coverage is not
+complete, but it provides an idea that may help you with your challenge.<span
+style='mso-spacerun:yes'> </span>You might notice that one test case,
+OneElementGenElementsTest, compares the result of the hand coded solution
+against a solution using the JGAP function classes.<span
+style='mso-spacerun:yes'> </span>One other confession to note, as simple as
+this problem is, I made a key mistake in programming the IfDrop class.<span
+style='mso-spacerun:yes'> </span>It did not drop the sand.<span
+style='mso-spacerun:yes'> </span>Therefore, the genetic program could never
+solve the problem.<span style='mso-spacerun:yes'> </span>It was a simple
+oversight that cost too many hours of frustration and exploration, but helped
+me understand more about JGAP.<o:p></o:p></span></p>
+
+<h3 class="subheader">Writing Unit Tests in JGAP</h3>
+
+JGAP is a Java program just like your traditional programming approaches. It is possible to create a unit test using
+the function classes that we created.<p/>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:1'>      </span></span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>public</span></b><span lang=EN-US style='font-size:
+10.0pt;font-family:"Courier New";color:black;mso-ansi-language:EN-US'> </span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>void</span></b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'> <span
+style='background:silver;mso-highlight:silver'>testGO_W</span>()</span><span style='mso-tab-count:1'>
+</span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>throws</span></b><span lang=EN-US style='font-size:
+10.0pt;font-family:"Courier New";color:black;mso-ansi-language:EN-US'>
+Exception {</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>GPProgram
+prog = </span><b><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New";
+color:#7F0055;mso-ansi-language:EN-US'>new</span></b><span lang=EN-US
+style='font-size:10.0pt;font-family:"Courier New";color:black;mso-ansi-language:
+EN-US'> GPProgram(</span><span lang=EN-US style='font-size:10.0pt;font-family:
+"Courier New";color:#0000C0;mso-ansi-language:EN-US'>m_gpconf</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'>, 3);<span style='mso-tab-count:2'><br>
+            </span></span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#0000C0;
+mso-ansi-language:EN-US'>m_antMap</span><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'>.resetMap();</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>prog.setApplicationData(</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#0000C0;
+mso-ansi-language:EN-US'>m_antMap</span><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'>);</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";mso-ansi-language:
+EN-US'><o:p></span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>ProgramChromosome
+pc1 = </span><b><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New";
+color:#7F0055;mso-ansi-language:EN-US'>new</span></b><span lang=EN-US
+style='font-size:10.0pt;font-family:"Courier New";color:black;mso-ansi-language:
+EN-US'> ProgramChromosome(</span><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:#0000C0;mso-ansi-language:EN-US'>m_gpconf</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'>, 50, prog);<span style='mso-tab-count:2'><br>
+            </span>pc1.getFunctions()[0]
+= </span><b><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New";
+color:#7F0055;mso-ansi-language:EN-US'>new</span></b><span lang=EN-US
+style='font-size:10.0pt;font-family:"Courier New";color:black;mso-ansi-language:
+EN-US'> GO_W(</span><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New";
+color:#0000C0;mso-ansi-language:EN-US'>m_gpconf</span><span lang=EN-US
+style='font-size:10.0pt;font-family:"Courier New";color:black;mso-ansi-language:
+EN-US'>);</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>pc1.redepth();<span style='mso-tab-count:2'><br>
+            </span>prog.setChromosome(0,
+pc1);</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";mso-ansi-language:
+EN-US'><o:p></span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>Object[]
+noargs = </span><b><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New";
+color:#7F0055;mso-ansi-language:EN-US'>new</span></b><span lang=EN-US
+style='font-size:10.0pt;font-family:"Courier New";color:black;mso-ansi-language:
+EN-US'> Object[0];</span><span style='mso-tab-count:2'><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>int</span></b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'> answer =
+prog.execute_int(0, noargs);</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span><i>assertEquals</i>(1,
+</span><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New";
+color:#0000C0;mso-ansi-language:EN-US'>m_antMap</span><span lang=EN-US
+style='font-size:10.0pt;font-family:"Courier New";color:black;mso-ansi-language:
+EN-US'>.getAnt().getXpos());</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span><i>assertEquals</i>(1,
+</span><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New";
+color:#0000C0;mso-ansi-language:EN-US'>m_antMap</span><span lang=EN-US
+style='font-size:10.0pt;font-family:"Courier New";color:black;mso-ansi-language:
+EN-US'>.getAnt().getYpos());</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";mso-ansi-language:
+EN-US'><o:p></o:p></span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>answer
+= prog.execute_int(0, noargs);<span style='mso-tab-count:2'><br>
+            </span><i>assertEquals</i>(0, </span><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New";
+color:#0000C0;mso-ansi-language:EN-US'>m_antMap</span><span lang=EN-US
+style='font-size:10.0pt;font-family:"Courier New";color:black;mso-ansi-language:
+EN-US'>.getAnt().getXpos());</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span><i>assertEquals</i>(1,
+</span><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New";
+color:#0000C0;mso-ansi-language:EN-US'>m_antMap</span><span lang=EN-US
+style='font-size:10.0pt;font-family:"Courier New";color:black;mso-ansi-language:
+EN-US'>.getAnt().getYpos());</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";mso-ansi-language:
+EN-US'><o:p></o:p></span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>answer
+= prog.execute_int(0, noargs);<span style='mso-tab-count:2'><br>
+            </span><i>assertEquals</i>(2, </span><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New";
+color:#0000C0;mso-ansi-language:EN-US'>m_antMap</span><span lang=EN-US
+style='font-size:10.0pt;font-family:"Courier New";color:black;mso-ansi-language:
+EN-US'>.getAnt().getXpos());</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span><i>assertEquals</i>(1,
+</span><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New";
+color:#0000C0;mso-ansi-language:EN-US'>m_antMap</span><span lang=EN-US
+style='font-size:10.0pt;font-family:"Courier New";color:black;mso-ansi-language:
+EN-US'>.getAnt().getYpos());</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";mso-ansi-language:
+EN-US'><o:p>&nbsp;</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:1'><br>
+      </span>}</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";mso-ansi-language:
+EN-US'><o:p></o:p></span></p>
+
+<p class=MsoNormal><span lang=EN-US style='mso-ansi-language:EN-US'>The second
+argument in </span><b><span lang=EN-US style='font-size:10.0pt;font-family:
+"Courier New";color:#7F0055;mso-ansi-language:EN-US'>new</span></b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'> GPProgram(</span><span lang=EN-US style='font-size:
+10.0pt;font-family:"Courier New";color:#0000C0;mso-ansi-language:EN-US'>m_gpconf</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'>, 3) identifies the number of programs that you are
+going to add to the GPProgram instance.<span style='mso-spacerun:yes'> 
+</span>One trick is that you must run the redepth() subprogram before you add
+the program to the GPProgram instance using setChromosome(…).<span
+style='mso-spacerun:yes'>  </span><o:p></o:p></span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New";
+color:black;mso-ansi-language:EN-US'>Another minor trick is how you handle
+nesting subfunctions with arguments.<span style='mso-spacerun:yes'>  </span>The
+testSolution subprogram of the OneAntGenElementsTest class is an example of how
+nesting works.<o:p></o:p></span></p>
+
+<p class=MsoNormal style='mso-layout-grid-align:none;text-autospace:none'><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#3F7F5F;
+mso-ansi-language:EN-US'>//<span style='mso-tab-count:2'>          </span>IFLTE
+(GO-W) (IF-DROP COLOR (IFLTE (GO-W) X (GO-S) (PICK-UP))) (IFLTE X<br>
+//<span style='mso-tab-count:2'>          </span>COLOR
+COLOR (PICK-UP)) (GO-S)</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>ProgramChromosome
+pc1 = </span><b><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New";
+color:#7F0055;mso-ansi-language:EN-US'>new</span></b><span lang=EN-US
+style='font-size:10.0pt;font-family:"Courier New";color:black;mso-ansi-language:
+EN-US'> ProgramChromosome(</span><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:#0000C0;mso-ansi-language:EN-US'>m_gpconf</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'>, 50, prog);<span style='mso-tab-count:2'><br>
+            </span>pc1.<span
+style='background:silver;mso-highlight:silver'>getFunctions</span>()[0] = </span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>new</span></b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'>
+IfLessThanOrEqual(</span><span lang=EN-US style='font-size:10.0pt;font-family:
+"Courier New";color:#0000C0;mso-ansi-language:EN-US'>m_gpconf</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'>, CommandGene.</span><i><span lang=EN-US
+style='font-size:10.0pt;font-family:"Courier New";color:#0000C0;mso-ansi-language:
+EN-US'>IntegerClass</span></i><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'>);</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>pc1.<span
+style='background:silver;mso-highlight:silver'>getFunctions</span>()[1] = </span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>new</span></b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'> GO_W(</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#0000C0;
+mso-ansi-language:EN-US'>m_gpconf</span><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'>);</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>pc1.<span
+style='background:silver;mso-highlight:silver'>getFunctions</span>()[2] = </span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>new</span></b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'> IfDrop(</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#0000C0;
+mso-ansi-language:EN-US'>m_gpconf</span><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'>, CommandGene.</span><i><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#0000C0;
+mso-ansi-language:EN-US'>IntegerClass</span></i><span lang=EN-US
+style='font-size:10.0pt;font-family:"Courier New";color:black;mso-ansi-language:
+EN-US'>);</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>pc1.<span
+style='background:silver;mso-highlight:silver'>getFunctions</span>()[3] = </span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>new</span></b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'> SandColor(</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#0000C0;
+mso-ansi-language:EN-US'>m_gpconf</span><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'>);</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>pc1.<span
+style='background:silver;mso-highlight:silver'>getFunctions</span>()[4] = </span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>new</span></b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'>
+IfLessThanOrEqual(</span><span lang=EN-US style='font-size:10.0pt;font-family:
+"Courier New";color:#0000C0;mso-ansi-language:EN-US'>m_gpconf</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'>, CommandGene.</span><i><span lang=EN-US
+style='font-size:10.0pt;font-family:"Courier New";color:#0000C0;mso-ansi-language:
+EN-US'>IntegerClass</span></i><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'>);</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>pc1.<span
+style='background:silver;mso-highlight:silver'>getFunctions</span>()[5] = </span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>new</span></b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'> GO_W(</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#0000C0;
+mso-ansi-language:EN-US'>m_gpconf</span><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'>);</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>pc1.<span
+style='background:silver;mso-highlight:silver'>getFunctions</span>()[6] = </span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>new</span></b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'> X(</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#0000C0;
+mso-ansi-language:EN-US'>m_gpconf</span><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'>);</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>pc1.<span
+style='background:silver;mso-highlight:silver'>getFunctions</span>()[7] = </span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>new</span></b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'> GO_S(</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#0000C0;
+mso-ansi-language:EN-US'>m_gpconf</span><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'>);</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>pc1.<span
+style='background:silver;mso-highlight:silver'>getFunctions</span>()[8] = </span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>new</span></b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'> Pickup(</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#0000C0;
+mso-ansi-language:EN-US'>m_gpconf</span><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'>, </span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#2A00FF;
+mso-ansi-language:EN-US'>&quot;First Pickup&quot;</span><span lang=EN-US
+style='font-size:10.0pt;font-family:"Courier New";color:black;mso-ansi-language:
+EN-US'>);</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>pc1.<span
+style='background:silver;mso-highlight:silver'>getFunctions</span>()[9] = </span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>new</span></b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'> IfLessThanOrEqual(</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#0000C0;
+mso-ansi-language:EN-US'>m_gpconf</span><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'>, CommandGene.</span><i><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#0000C0;
+mso-ansi-language:EN-US'>IntegerClass</span></i><span lang=EN-US
+style='font-size:10.0pt;font-family:"Courier New";color:black;mso-ansi-language:
+EN-US'>);</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>pc1.<span
+style='background:silver;mso-highlight:silver'>getFunctions</span>()[10] = </span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>new</span></b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'> X(</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#0000C0;
+mso-ansi-language:EN-US'>m_gpconf</span><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'>);</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>pc1.<span
+style='background:silver;mso-highlight:silver'>getFunctions</span>()[11] = </span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>new</span></b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'> SandColor(</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#0000C0;
+mso-ansi-language:EN-US'>m_gpconf</span><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'>);</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>pc1.<span
+style='background:silver;mso-highlight:silver'>getFunctions</span>()[12] = </span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>new</span></b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'> SandColor(</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#0000C0;
+mso-ansi-language:EN-US'>m_gpconf</span><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'>);</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>pc1.<span
+style='background:silver;mso-highlight:silver'>getFunctions</span>()[13] = </span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>new</span></b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'> Pickup(</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#0000C0;
+mso-ansi-language:EN-US'>m_gpconf</span><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'>, </span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#2A00FF;
+mso-ansi-language:EN-US'>&quot;Second Pickup&quot;</span><span lang=EN-US
+style='font-size:10.0pt;font-family:"Courier New";color:black;mso-ansi-language:
+EN-US'>);</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>pc1.<span
+style='background:silver;mso-highlight:silver'>getFunctions</span>()[14] = </span><b><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#7F0055;
+mso-ansi-language:EN-US'>new</span></b><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'> GO_S(</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:#0000C0;
+mso-ansi-language:EN-US'>m_gpconf</span><span lang=EN-US style='font-size:10.0pt;
+font-family:"Courier New";color:black;mso-ansi-language:EN-US'>);</span><span
+lang=EN-US style='font-size:10.0pt;font-family:"Courier New";color:black;
+mso-ansi-language:EN-US'><span style='mso-tab-count:2'><br>
+            </span>pc1.redepth();<span style='mso-tab-count:2'><br>
+            </span>prog.setChromosome(0,
+pc1);</span><p/>
+
+<p>If the function class requires one or more arguments, then the classes are added
+in the following array elements and are used by the nested function class
+before continuing to add arguments to the parent function class.
+
+<h3 class="subheader">Summary</h3>
+
+Genetic programming with JGAP can work if you’ve set your problem up
+correctly. Debugging a program that the
+system automatically created offers a significant challenge. To combat the delegation of control to JGAP,
+consider writing unit tests that check your domain logic and seriously consider
+checking your genetic functions with JGAP unit tests.<p class="copyright">Created
+by Scott Mueller, extended and formatted by <a href="http://www.doktor-meffert.com" target="_blank">Klaus
+Meffert</a> </p>
+
+<hr>
+
+<p align="center"><a class="homeLink" href="../../../index.html">[JGAP Home]</a> <br>
+<a href="http://sourceforge.net/projects/jgap"><img
+src="http://sourceforge.net/sflogo.php?group_id=11618&amp;type=5" width="210" height="62"
+border="0" alt="SourceForge Logo"></a> </p>
+
+</body>
+
+</html>

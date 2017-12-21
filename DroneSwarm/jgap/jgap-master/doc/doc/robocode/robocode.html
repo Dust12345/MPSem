@@ -1,0 +1,309 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<link rel="stylesheet" href="../../jgap.css" type="text/css">
+<meta name="description" content="Building Robocode robots by genetically evolving Java programs.">
+<meta name="keywords" content="java, robocode, JGAP, open source, genetic, algorithm, genetic programming, ga, gp,
+                   optimization, evolutionary, framework ">
+<title>Robocode with JGAP</title>
+</head>
+
+<body class="documentTextRobocode">
+
+<h1 class="docTitle"><a href="http://jgap.sf.net"><img border="0" src="RobocodeJGAP.png" width="712" height="264" alt="RobocodeJGAP"></a></h1>
+
+<a name="top">
+
+<p class="text">Robocode is a game. There is a playfield in which two virtual
+robots fight against each other. A robot can perform certain actions, like
+moving around, scanning the environment, shooting and turning the gun. Robocode
+notified a robot if a significant event occurs, including: scanned the opponent,
+hit a wall, hit by a bullet or hit the opponent.<p class="text">To write your
+own robot, you can use service functions that the Robocode platform offers.
+These service functions are plain Java methods. In the end, you write a Java
+class that represents your robot. Here is a screenshot of a Robocode battle:<p class="text" align="center"><img border="0" src="robobattle.jpg" alt="Robots fighting a battle" width="209" height="174"><p class="text">It
+is also possible that more than two robots compete against each other, but we
+are more interested in the basic principles and skip that for simplicity.
+<h2><font color="#008000">Using JGAP to produce robots</font></h2>
+<p class="text">With JGAP 3.0, the so-called Genetic Programming (GP) has been
+introduced. GP allows to write programs that conform to a specified syntax. Each
+program can the be executed and measured by a fitness function.<p class="text">It
+is also possible producing Java code with JGAP. Simply put, you just let the
+used GP-commands return a String result. The String result represents a specific
+and valid Java command.<p class="text">How that works is impressively
+demonstrated by Javier Meseguer and Enrique D. Martí. Their implementation uses
+JGAP to create an aspirant robot, test its fitness by competing against a strong
+opponent, evaluate the results of the virtual battle, and then do further
+evolutions. They also extended some Robocode base classes to make things work
+better. A very nice feature is the graphical display from Robocode to
+visualize the battles of the evolved robots against its opponent.</a>
+
+<h2><font color="#008000">Get started with the JGAP Robocode example</font></h2>
+<p class="text">Please do the following:
+<ol>
+  <li>
+    <p class="text">Download <a href="robocodeJGAP.0.3.zip"> RobocodeJGAP
+    version 0.3</a> (contribution by Javier
+    Meseguer and Enrique D. Martí, strongly extended by Klaus Meffert with help from
+    Robocode's all-hands-person Flemming N. Larsen).</li>
+  <li>
+    <p class="text">Extract the Robocode example into a folder of your choice.</li>
+  <li>
+    <p class="text">Care that you have Java version 5 or 6 installed as JDK
+    (Java Development Kit), a JRE (Java Runtime Environment) is not enough. Care
+    that your path variable is set appropriately. <b>Java 7 is not officially
+    supported!</b></li>
+  <li>
+    <p class="text">Start the example by running of the provided batch files
+    (.bat) respectively the corresponding commands necessary on Linux systems.
+    Let the example run for some minutes. It may take some time until a good
+    solution is found. Please notice: Don't place&nbsp; the files in a directory
+    that contains spaces or special characters. This may cause problems with
+    Java security.</li>
+  <li>
+    <p class="text"> The battle is undertaken by the currently
+    evolved robot.&nbsp;You can turn on&nbsp; the graphical display by
+    adding&nbsp; the
+    &quot;-gui&quot; option in the previous step at the end of the command in
+    the batch file. It takes some time until the
+    GUI appears as it is quite time-consuming and is just there for
+    demonstration purposes. Otherwise you can see the evolution by examining the
+    log messages.</li>
+  <li>
+    <p class="text">When looking at the provided batch files: The&nbsp; command-line parameter &quot;-enemy&quot;
+    lets you specify an individual opponent for your robot to compete
+    with. After the &quot;-enemy&quot; option you have to give the name of your
+    class, e.g. &quot;<i>myrobots.MyRobot</i>&quot; for class <i>MyRobot</i>
+    that resides in subdirectory <i>myrobots</i>. In the above call,&nbsp; <i>Aspirant3285</i>
+    is used.</li>
+  <li>
+    <p class="text">If you plan to run RobocodeJGAP from within your IDE, please
+    notice that <b><u>all</u></b> command line options are set accordingly to
+    the options in the batch files from the previous step! Especially take care
+    that <b>JAVA_HOME</b> ist set correctly and that <b>tools.jar</b> is in your
+    classpath!</li>
+</ol>
+<p class="text">By looking in the <i> robots/jgap</i> subfolder you can see the
+robot's source code generated with JGAP (file: <a href="Aspirant.java">Aspirant.java</a> - click on link for sample
+code evolved).<p class="text">As for every individual robot evolved the Java
+compiler has to be invoked, computation may take some time. In the future the
+JGAP Grid will enable to compute such things distributedly in a LAN and/or WAN.<p class="text">Feedback
+is very welcome!<h2><font color="#008000">Advanced options</font></h2>
+<p class="text">It is possible using several options to control how RobocodeJGAP evolves
+robots. These options are:</p>
+
+<div>
+<table bordercolor="#008000" border="1" rules="rows" cellspacing="3" cellpadding="3">
+<tr>
+  <td width="230" class="optionListing">
+    -enemies &lt;filename&gt;
+  </td>
+  <td class="optionListing2">
+    The filename given defines a test file. Each line contains the full name of an enemy to fight against. A sample content of such a file could
+    be (2 lines shown! No empty line):
+    <p>--- begin after this line:<br>
+    voidious.Dookious<br>
+    sample.TrackFire<br>
+    --- end before this line</p>
+    <p>It is important to have the referenced robots available to RobocodeJGAP.
+    Thus, they have to be under the robots directory.</p>
+    <p>Also see <b>-battleAll</b></p>
+  </td>
+</tr>
+<tr>
+  <td width="230" class="optionListing">
+    -enemy &lt;robot&gt;	
+  </td>
+  <td class="optionListing2">
+    Specifies a single enemy robot. Full robot name must be given, e.g. <b>sample.TrackFire</b>
+  </td>
+</tr>
+<tr>
+  <td width="230" class="optionListing">
+-battleAll	
+  </td>
+  <td class="optionListing2">
+    Only in conjunction with <b>-enemies</b>. If given, the robot to be evolved
+    battles against all robots from <b>-enemies</b> in one round. Then, the
+    score is the average of all fights in the round.
+    <p>If the option is omitted, in each round a single opponent is chosen
+    randomly from the list of opponents given with <b>-enemies</b>.&nbsp;</p>
+  </td>
+</tr>
+<tr>
+  <td width="230" class="optionListing">
+-advanced	
+  </td>
+  <td class="optionListing2">
+    The evolved robot extends the <i>AdvancedRobot</i> class. Thus, advanced
+    commands can be used.
+    <p>If omitted, the ordinary <i>Robot</i> class is extended. Not all commands
+    are available.</p>
+  </td>
+</tr>
+<tr>
+  <td width="230" class="optionListing">
+-fastTry &lt;tries&gt;	
+  </td>
+  <td class="optionListing2">
+    This is for testing purposes only. It skips invoking the Robocode engine for
+    <b>&lt;tries&gt;</b> times.
+  </td>
+</tr>
+<tr>
+  <td width="230" class="optionListing">
+    -maxFitness &lt;value&gt;	
+  </td>
+  <td class="optionListing2">
+    After a robot has been evolved with a fitness of <b>&lt;value&gt;</b> or
+    higher, the program stops.
+    <p>If option is missing, a default of 15000 is used.</p>
+  </td>
+</tr>
+<tr>
+  <td width="230" class="optionListing">
+-minFitness &lt;value&gt;	
+  </td>
+  <td class="optionListing2">
+    Only robots with a fitness value of <b>&lt;value&gt;</b> or higher are
+    dumped to a file on disk.
+    <p>If option is missing, a default of 500 is used.</p>
+  </td>
+</tr>
+<tr>
+  <td width="230" class="optionListing">
+    -maxGenerations &lt;value&gt;	
+  </td>
+  <td class="optionListing2">
+    Maximum number of generations after which computation will be stopped (hard
+    exit).
+  </td>
+</tr>
+<tr>
+  <td width="230" class="optionListing">
+    -maxDepth1..4 &lt;value&gt;	
+  </td>
+  <td class="optionListing2">
+    Maximum depth of sub program i, with i =
+    <ul>
+      <li>1: onScannedRobot</li>
+      <li>2: onHitByBullet</li>
+      <li>3: onHitWall</li>
+      <li>4: onHitRobot</li>
+    </ul>
+  </td>
+</tr>
+<tr>
+  <td width="230" class="optionListing">
+    -roundsStart &lt;value&gt;	
+  </td>
+  <td class="optionListing2">
+    For the first generations (at the moment 15) only <b>&lt;value&gt;</b>
+    rounds are executed in a single battle. This is to speed up computation by
+    gaining faster preliminary&nbsp; results.
+  </td>
+</tr>
+<tr>
+  <td width="230" class="optionListing">
+-roundsMature &lt;value&gt;&nbsp;	
+  </td>
+  <td class="optionListing2">
+    After the first generations (see above) <b>&lt;value&gt;</b> rounds are
+    executed in a single battle. For your information: In <a href="http://robowiki.net/cgi-bin/robowiki?RoboRumble" target="_blank">RoboRumble</a>
+    35 rounds are used, which is quite a lot.
+    <p>Also see <b>-adaptRounds</b></p>
+  </td>
+</tr>
+<tr>
+  <td width="230" class="optionListing">
+    -adaptRounds &lt;value&gt;	
+  </td>
+  <td class="optionListing2">
+    If this option is given, in any case the number of rounds from option <b>-roundsStart</b>
+    is battled.&nbsp;The only exception is f the fitness value determined with
+    the battle is <b>&lt;value&gt;</b> or higher. Then, and only then the number
+    of rounds from option <b>-roundsMature</b> is battled.
+  </td>
+</tr>
+<tr>
+  <td width="230" class="optionListing">
+-noProgOutput	
+  </td>
+  <td class="optionListing2">
+    If given, no intermediary code is printed to the console/log. Intermediary
+    code is such that is not output as a new best solution. Using this option
+    makes the log more readable but less detailled.
+  </td>
+</tr>
+<tr>
+  <td width="230" class="optionListing">
+-continue &lt;filename&gt;	
+  </td>
+  <td class="optionListing2">
+    Continues evolution by reading in a previous state from file <b>&lt;filename&gt;</b>.
+    <p>Also see <b>-save</b>
+  </td>
+</tr>
+<tr>
+  <td width="230" class="optionListing">
+-save &lt;filename&gt;	
+  </td>
+  <td class="optionListing2">
+    Persists the state of evolution every 10 rounds to file <b>&lt;filename&gt;</b>.
+    <p>Also see <b>-continue</b>
+  </td>
+</tr>
+</table>
+</div>
+<p class="text">The options are case-insensitive. Therefore it does not matter if you write
+<b><font face="Courier New">-noProgOutput</font></b> or <b><font face="Courier New">-noprogoutput</font></b>.</p>
+<h2><font color="#008000">Obtaining the source code</font></h2>
+<p class="text">A lot of people asked for the source code of RobocodeJGAP.
+Normally, I don't give it away due to the following reasons:</p>
+
+<p class="text">1) JGAP had to be adapted and extended a lot to play together
+with RobocodeJGAP.</p>
+
+<p class="text">2) The original RobocodeJGAP version from Javier and Enrique was
+strongly extended in order to get better results.</p>
+
+<p class="text">3) Keeping RobocodeJGAP up-to-date is time-consuming.</p>
+
+<p class="text">4) It is always paramount to give the best support possible.
+This is only possible if the number of requests does not get too high.&nbsp;</p>
+
+<p class="text">5) JGAP itself as the major component is open source. Really a
+lot of effort was put into JGAP and RobocodeJGAP as well. In the last time,
+there was not much code contribution from other people. It's hard keeping up
+with two time-comsuming open source projects besides a regular job, so
+RobocodeJGAP currently is not open source, but JGAP is.</p>
+
+<p class="text">6) RobocodeJGAP is complex and is in a long-lasting beta-stage.
+The point of ending beta is defined as the time when RobocodeJGAP is able to
+evolve really competitive robots.</p>
+
+<p class="text">For these tasks, I invested a lot of my spare time. No one
+helped with that, although there were some offers which didn't get reality
+(meaning additionl effort). So I decided to only give the code to people <a href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=paypal%40klaus%2dmeffert%2ede&amp;item_name=Donation%20to%20RobocodeJGAP&amp;page_style=PayPal&amp;no_shipping=1&amp;cn=Additional%20comments&amp;tax=0&amp;currency_code=EUR&amp;bn=PP%2dDonationsBF&amp;charset=UTF%2d8" target="_blank">donating
+at least 25 Euros to JGAP</a>. If you donated and want to
+receive the source code of RobocodeJGAP, <a href="mailto:jgap@doktor-meffert.de">please
+send a short note after donating</a>, using the email address you want to get a
+reply to.</p>
+
+<p class="text">Thank you for your understanding.</p>
+
+<p class="text">&nbsp;</p>
+<p class="copyright">Copyright © 2005-2012 <a href="http://www.doktor-meffert.com" target="_blank">Klaus Meffert</a>
+(with great support&nbsp; from Javier Meseguer). <span lang="EN-GB" style="mso-ansi-language: EN-GB">GNU
+free documentation </span><a href="http://www.gnu.org/licenses/fdl.html" target="_blank"><span lang="EN-GB" style="mso-ansi-language: EN-GB">license</span></a> </p>
+
+<hr>
+<a class="homeLink" href="../index.html">
+
+<p align="center">[JGAP Home]</a> <br>
+<a href="http://sourceforge.net/projects/jgap"><img
+src="http://sourceforge.net/sflogo.php?group_id=11618&amp;type=5" width="210" height="62"
+border="0" alt="SourceForge Logo"></a> </p>
+</body>
+</html>

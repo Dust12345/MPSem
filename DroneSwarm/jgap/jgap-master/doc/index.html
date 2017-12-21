@@ -1,0 +1,285 @@
+<html>
+
+<head>
+<link rel="SHORTCUT ICON" href="favicon.ico">
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="description" content="A genetic algorithms component written in the form of a Java package. It provides basic genetic mechanisms that can be easily used to apply evolutionary principles to problem solutions.">
+<meta name="keywords" content="java, genetic algorithms, programming, ga, gp, optimization, evolutionary">
+<meta http-equiv="Cache-Control" content="no-cache" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta NAME="robots" CONTENT="NOARCHIVE,INDEX,FOLLOW">
+<meta NAME="expires" CONTENT="now">
+<title>JGAP: Java Genetic Algorithms Package</title>
+<link rel="stylesheet" href="jgap.css" type="text/css">
+</head>
+
+<body class="background">
+
+<table width="90%">
+  <tr>
+    <td width="30%" align="center"><a href="http://opensource.org/docs/certification_mark.php"><img
+    class="osi-logo" src="osi-certified-90x75.png" alt="OSI Certified Open Source Software"
+    width="90" height="75"> </a></td>
+    <td width="60%">
+      <p align="center"><img src="jgap-logo.jpeg"
+    alt="JGAP: Java Genetic Algorithms Package (logo)" width="529" height="121"> </p>
+ </td>
+  </tr>
+  <tr>
+    <td width="30%" valign="top"><p class="navbar">
+    <table>
+    <tr><td bgcolor="#008000" align="center">
+    <a href="#documentation"><b><font face="Microsoft Sans Serif" color="#FFFFFF" size="3">Documentation</font></b></a></td></tr>
+    <tr><td bgcolor="#008000" align="center">
+    <b><a href="doc/references/References.html"><font face="Microsoft Sans Serif" size="3" color="#FFFFFF">JGAP
+    References</font></a></b></td></tr><tr>
+    <td bgcolor="#008000" align="center">
+    <a href="http://sourceforge.net/project/showfiles.php?group_id=11618&amp;package_id=48940"><b><font face="Microsoft Sans Serif" color="#FFFFFF" size="3">Download</font></b>
+    <img src="dwnl_arrow.gif" alt="Download" border="0"> </a></td></tr>
+    <tr>
+    <td bgcolor="#008000" align="center">
+    <b><a href="doc/clover/index.html"><font face="Microsoft Sans Serif" size="3" color="#FFFFFF">Clover
+    Code Coverage</font></a></b></td>
+    </tr>
+    <tr>
+    <td bgcolor="#008000" align="center">
+    <b><a href="doc/contrib/contributors.html"><font face="Microsoft Sans Serif" size="3" color="#FFFFFF">Major
+    Contributors</font></a></b></td>
+    </tr>
+    <tr>
+    <td bgcolor="#008000" align="center">
+      <font face="Microsoft Sans Serif">
+    <a href="http://www.sf.net/projects/jgap/"><b><font size="3" face="Microsoft Sans Serif" color="#FFFFFF">Project Details</font></b></a>
+      </font>
+    </td></tr><tr>
+    <td bgcolor="#008000" align="center">
+      <a href="links/links.html"><b><font size="3" face="Microsoft Sans Serif" color="#FFFFFF">Interesting Links</font></b></a>
+    </td></tr>
+      </table>
+      
+      <table>
+      <tr>
+      <td height="20"></td><tr>
+      <td bgcolor="#008000" align="center">
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+<table  class="donate">
+  <tr><td colspan=3>
+    <span><b><font color="#FFFFFF"><a name="support"></a>Support JGAP!</font></b></span>
+  </td></tr>
+  <tr>
+<!--    <td style="padding:2px"><strong>Amount</strong></td>-->
+    <td style="padding:2px"><input type="text" name="amount" value="5.00" size="6" style="text-align:right;" /></td>
+    <td style="padding:2px">
+	<select name="currency_code">
+  	<option value="EUR">€</option>
+  	<option value="USD">$</option>
+  	</select>
+	</td>
+    <td><input type="submit" name="submit" value="Donate" /></td>
+  </tr>
+</table>
+  <input type="hidden" name="cmd" value="_xclick" />
+  <input type="hidden" name="business" value="paypal@klaus-meffert.de" />
+  <input type="hidden" name="item_name" value="JGAP and RobocodeJGAP" />
+  <input type="hidden" name="item_number" value="JGAP-DONATE" />
+  <input type="hidden" name="no_shipping" value="1" />
+  <input type="hidden" name="no_note" value="0" />
+  <input type="hidden" name="tax" value="0" />
+  <input type="hidden" name="bn" value="PP-DonationsBF" />
+  <input type="hidden" name="lc" value="US" />
+</form>
+</td></tr></table>
+<table>
+<tr>
+  <td>
+    <img border="0" src="sfball.gif" width="29" height="36">
+  </td>
+  <td>
+    <p align="center" class="text">
+    <b><font size="2">#1 Genetic Algorithms<br>
+ project on Sourceforge</font></b></p>
+  </td>
+</tr>
+</table>    
+      <p class="text" align="center" style="margin-bottom: -5"><font size="2">RobocodeJGAP:</font></p>
+      <p class="text" align="center"><a href="doc/robocode/robocode.html"><img border="0" src="doc/robocode/robobattle.jpg" width="209" height="174"></a></p>
+      <p class="text" align="center"><font size="2">Find JGAP as a reference project<br>
+      for Test-Driven
+      Development:</font></p>
+      <p class="text" align="center"><a target="_blank" href="http://www.amazon.de/exec/obidos/ASIN/3935042760/ref=ase_jgapjavagenet-21/302-0140503-8672069"><img border="0" src="bookcover2small.JPG" width="168" height="250"></a></p>
+      <p>&nbsp;</p>
+</td>
+    <td width="60%" valign="left">
+      <h4 class="header">WHAT IS JGAP?</h4>
+      <p class="text">JGAP (pronounced &quot;jay-gap&quot;) is a Genetic Algorithms
+      and Genetic Programming component provided as a Java framework. It provides basic genetic mechanisms that can be
+    easily used to apply evolutionary principles to problem solutions. See the examples for a demonstration
+      or watch out the <a href="http://sourceforge.net/project/screenshots.php?group_id=11618&amp;ssid=40991" target="_blank">graphical
+      tree</a> that can be created with JGAP for found solutions of genetically
+      evolved programs.
+<br><br>JGAP was designed to be very easy to use &quot;out of the box&quot;, while also designed to be highly
+    modular so that more adventurous users can easily plug-in custom genetic operators and
+    other sub-components. </p>
+      <p class="text">Documentation,&nbsp; quality and stability of code are the
+      top concerns when developing JGAP. You find really <b>a lot of unit tests</b>
+      packaged
+      with JGAP (&gt; 1400), extensive Javadocs, and quite a lot of examples. Compare JGAP
+      with other projects! Feedback is always welcome. </p>
+      <table border="0" width="100%" cellspacing="10">
+        <tr>
+          <td width="50%">
+      <p class="box" style="border-style: dashed; border-color: #008000"><a href="doc/install.html"><font color="#008000">Install JGAP in 5 minutes</font></a></p>
+          </td>
+          <td width="50%">
+      <p class="box"><a href="doc/grid/contribute.html">Join the JGAP Grid!</a></p>
+          </td>
+        </tr>
+      </table>
+      <h4 class="header">WHAT ARE GENETIC ALGORITHMS AND GENETIC PROGRAMS?</h4>
+      <p class="text">Genetic algorithms (GAs) are evolutionary algorithms that use the
+    principle of natural selection to evolve a set of solutions toward an optimum solution.
+    GAs are not only quite&nbsp; powerful, but are also very easy to use as most of the work can be
+    encapsulated into a single component, requiring users only to define a <i>fitness function</i>
+    that is used to determine how &quot;good&quot; a particular solution is relative to other
+    solutions. Genetic Programs (GP) enhance GAs. They allow to breed dynamic
+      programs instead of static chromosomes. Simply run an example such as <a href="javadoc/3.4/examples/gp/Fibonacci.html">examples.gp.Fibonacci</a>,
+      <a href="javadoc/3.4/examples/gp/anttrail/AntTrailProblem.html">examples.gp.anttrail.AntTrailProblem</a>,
+      <a href="javadoc/3.4/examples/gp/monalisa/gui/GeneticDrawingApp.html">examples.gp.monalisa.gui.GeneticDrawingApp</a>
+      or see the <a href="doc/genetic_programming.html">GP documentation</a> to
+      get behind the scenes. A <a href="doc/robocode/robocode.html">complex
+      example</a> evolves a <a href="http://robocode.sf.net" target="_blank">Robocode</a>,
+      that is a platform for simulating competing robots. <b>JGAP writes
+      complete full-blown Java code <a href="doc/doc/robocode/robocode.html"> just by evolution</a></b>! </p>
+    <h4 class="header">WHERE DO I GET THE LATEST VERSION?</h4>
+      <p class="text"><b>The latest release of JGAP is version 3.6.2</b>, result of many years of personal investment and dedication to Genetic Algorithms and
+    Genetic Programming. A big thank you to all contributors, may it be developers
+      or users giving feedback! In the <a href="http://jgap.cvs.sf.net/viewvc/jgap/" target="_blank"> CVS</a> you very often find updated and
+      enhanced code before a new release is published. Be aware that JGAP is a
+      very alive project from which you can expect a lot of releases to come. </p>
+    <p class="text">Please see the <a
+    href="http://sourceforge.net/project/showfiles.php?group_id=11618">Downloads</a>
+    section for more information on each of the releases, including the current version, as well as
+    any release notes that accompany each version. </p>
+    <a name="documentation"><h4 class="header">WHAT DOCUMENTATION IS AVAILABLE?</h4>
+    <p class="text">The following introductory documents are available to help you get started
+    with JGAP: <ul class="text">
+    </a>
+      <li><a href="doc/faq.html"><b>FAQ - Frequently Asked Questions</b></a></li>
+      <li><a href="doc/install.html">Installation of JGAP</a></li>
+      <li><a href="doc/gaintro.html">A Brief Introduction to Genetic Algorithms</a></li>
+      <li><a href="doc/tutorial.html">Getting Started with JGAP</a></li>
+      <li><a href="doc/reality.html">Differences between Nature and Genetic
+        Algorithms</a></li>
+      <li><a href="doc/genetic_programming.html">JGAP and Genetic Programming
+        (GP)</a> </li>
+      <li><a href="doc/desert/Solving_Problems_using_Genetic_Programming_with_JGAP.html">Solving
+        problems using Genetic Programming with JGAP</a> </li>
+      <li><a href="doc/philosophy.html">Philosophy and visions of JGAP</a></li>
+      <li><a href="doc/genes.html">Creating Custom Genes</a></li>
+      <li><a href="doc/operators.html">Creating Custom Genetic Operators</a></li> 
+      <li><a href="doc/marshalling.html">Marshalling Populations to XML</a></li>
+      <li><a href="doc/supergenes/supergenes.html">Using the Supergene conception from biology</a></li> 
+      <li><a href="doc/salesman/TravellingSalesman.html">Handling problems
+        related to the Traveling Salesman Problem (TSP)</a></li> 
+      <li><a href="doc/codestyle.html">Coding Style and Practices</a></li>
+      <li><a href="upgrade/upgrade.html">Upgrading from older JGAP versions</a></li>
+      <li><a href="doc/grid/localgrid.html">Build a grid with JGAP</a></li>
+      <li><a href="doc/statistics.html">Statistics (Lines of code, classes,
+        packages; test cases; examples)</a></li>
+    </ul>
+    <p class="text">In addition, Javadocs are available online for the following versions of
+    JGAP: <ul class="text">
+      <li><a href="javadoc/3.6">JGAP 3.6 Javadocs</a></li>
+      <li><a href="javadoc/3.5">JGAP 3.5 Javadocs</a></li>
+      <li><a href="javadoc/3.4.4">JGAP 3.4.4 Javadocs</a></li>
+      <li><a href="javadoc/3.01">JGAP 3.01 Javadocs</a></li>
+      <li><a href="javadoc/2.0">JGAP 2.0 Javadocs</a></li>
+      <li><a href="javadoc/0.32">JGAP 0.32 Javadoc</a></li>
+    </ul>
+    <p class="text">Or: retrieve <a href="doc/jgap-doc-from-site-20071210.pdf" target="_blank">one
+    PDF file</a> for printout or to browse on a notebook (thanx to Denis). Date
+    of file creation: 2007-12-10.</p>
+    <p class="text"><b>If you need require individual information about extended
+    or complicated questions, please think about donating something (see top of
+    page on the left). You will get first class personal service via email.</b></p>
+    <h4 class="header">WHERE CAN I FIND HELP?</h4>
+    <p class="text">If you run into any issues or bugs, or just have a question, please try
+    posting a message to the moderated jgap-users mailing list at <a
+    href="mailto:jgap-users@lists.sourceforge.net">jgap-users@lists.sourceforge.net</a>
+    (please notice that moderator approval is necessary). Or
+    you can drop us a note on the JGAP developers mailing list at <a
+    href="mailto:jgap-devl@lists.sourceforge.net">jgap-devl@lists.sourceforge.net</a> 
+    which is also moderated. </p>
+    <a name="mailinglists"><h4 class="header">WHAT MAILING LISTS ARE AVAILABLE?</h4>
+    <p class="text">There are three public mailing lists that pertain to JGAP: <ul>
+      <li class="listText">Public announcements concerning JGAP, including any new release
+        announcements, are made on the jgap-announce mailing list. </li>
+      <li class="listText">Users of JGAP are encouraged to ask questions, make suggestions, or
+        participate in general discussion of JGAP on the jgap-users mailing list. </li>
+      <li class="listText">Discussion amongst the JGAP developers concerning future and
+        in-progress development of JGAP occurs on the jgap-devl mailing list. </li>
+    </ul>
+    <p class="text">If you would like to subscribe to any of these lists, or browse the
+    archives, please visit the JGAP </a><a href="http://sourceforge.net/mail/?group_id=11618">mailing
+    list manager</a>. </p>
+    <p class="text">For searching posts in lists, maybe the external <a href="http://www.nabble.com/JGAP-f3946.html" target="_blank">Nabble
+    forum</a> is sufficient (this forum is not under control of the JGAP team). </p>
+    <a name="feedback">
+  </a>
+    <a name="license"><h4 class="header">UNDER WHAT LICENSE IS JGAP DISTRIBUTED?</h4>
+    <p class="text"><b>JGAP is free software</b>; you can redistribute it and/or modify it under the
+    terms of the </a><a href="http://www.gnu.org/licenses/fdl.txt">GNU Lesser Public License</a>
+    as published by the Free Software Foundation; either version 2.1 of the License, or (at
+    your option) any later version. 
+Instead, you could choose to use the <a href="http://www.mozilla.org/MPL/" target="_blank">
+Mozilla Public License</a> to use JGAP in <b> commercial applications</b>
+without the need of publishing your source code or make it reverse engineerable
+(as is required with the GNU License). <b> For using the MPL you have to <a href="#support"> donate at least
+    50 Euros</a></b>
+to JGAP.
+    Maybe you would like to browser further information about <a href="commercialUsage.html">using
+    JGAP commercially</a>.
+
+</p>
+    <p class="text">JGAP is distributed in the hope that it will be useful, but WITHOUT ANY
+    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+    PURPOSE. See the above mentioned GNU Lesser Public License and the Mozilla
+    Public License for more details. But we offer really a lot of unit tests
+    which help assure a very high probability for&nbsp; a correct piece of
+    software! </p>
+    <h4 class="header">WE NEED FEEDBACK!</h4>
+    <p class="text">Thank you for your interest in JGAP. We are very interested in any
+    feedback you might have, including details of how you're using JGAP, what you like about
+    it, and what you think needs improvement. You can leave this feedback on the user's
+    mailing list at <b> jgap-users &lt;at&gt; lists.sourceforge.net</b> or, if you prefer to keep these details
+    private, you can email the JGAP project administrator at <b>jgap &lt;at&gt;
+    doktor-meffert.de</b>. The more feedback we get, the more we can improve JGAP to better
+    meet the needs of our users. Thanks for your support! </p>
+<a name="todo">
+    <h4 class="header">ACCESSING THE NEWEST CODE VIA CVS REPOSITORY</h4>
+    <p class="text">If you're interested in the latest, bleeding-edge JGAP code, it can be
+    found in the CVS repository hosted on Sourceforge. It goes without saying that this code
+    is not considered to be stable and may be buggier than usual. If you're really unlucky, it
+    may not even compile. However, it may also be the case that some particular feature or
+    bug-fix that you require has not yet been included in a public release and therefore only
+    exists in the CVS repository. Or, maybe you just want to follow our progress ;-) </p>
+    <p class="text">The following options are available for accessing the code in the CVS
+    repository: <ul class="text">
+ </a>
+      <li><a href="http://jgap.cvs.sf.net/viewvc/jgap/">Browse</a> the repository on the
+        web. </li>
+      <li>Perform an <a href="http://www.sf.net/cvs/?group_id=11618">anonymous check-out</a> of
+        the code. </li>
+    </ul>
+    </td>
+  </tr>
+  <tr>
+    <td><p align="center"><a href="http://sourceforge.net"><img
+    src="http://sourceforge.net/sflogo.php?group_id=11618&amp;type=5" width="210" height="62"
+    border="0" alt="SourceForge Logo"></a> </td>
+    <td><p class="copyright">Copyright © 2002 - 2012 <a href="http://www.doktor-meffert.com" target="_blank">Klaus Meffert</a> / Neil Rotstan. All
+    rights reserved. </td>
+  </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,167 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="description" content="FAQ - Frequently asked questions about JGAP, Genetic Algorithms and Genetic Programming.">
+<meta name="keywords" content="java, genetic algorithms, framework, genetic programming, faq, questions,
+                   optimization, evolutionary, open source, genes, alleles, chromosomes">
+<link rel="stylesheet" href="../jgap.css" type="text/css">
+<title>JGAP Frequently Asked Questions</title>
+</head>
+
+<body class="documentText">
+
+<h1 class="docTitle">JGAP Frequently Asked Questions</h1>
+<a class="homeLink" href="../index.html">
+
+<p align="center">[JGAP Home]</a> </p>
+
+<hr>
+<a name="top">
+
+<p class="text">The following is a brief collection of questions and answers that come up periodically
+on the JGAP mailing lists. If you have suggestions for additional questions, please feel
+free to post them to the jgap-users mailing list! 
+
+<ol>
+  <li><p class="text">After running an example, the following error appears
+    (parts of the output omitted here for brevity):<br>
+    <i>Exception in thread &quot;main&quot;
+    java.lang.UnsupportedClassVersionError: &lt;classname&gt; (Unsupported
+    major.minor version 49.0)</i><br>
+    <br>
+    It seems you have the wrong Java version installed. JGAP is currently
+    compiled with Java 6. Please install Java 6. In case you have it already
+    installed, please check that this installation is used and not a different
+    one. You could do this by typing the following on the command line: <font face="Courier New">java
+    -version</font> </p>
+  </li>
+  <li><p class="text">Is there a way to create a fitness function that can evaluate all of
+    the Chromosomes in a population at once? </p>
+    <p class="text">Yes, a bulk fitness-function can be used. The bulk fitness function is
+    passed all of the Chromosomes in a population at once, and then is responsible for
+    evaluating each of those Chromosomes and setting their fitness values. This can be
+    especially useful when you want to evaluate Chromosomes in relationship to each other
+    (rather than in isolation of each other), or if you want to make use of an external
+    service to actually perform the evaluation. </p>
+    <p class="text">For more information on bulk fitness-functions, please see the javadocs
+    for the </a><a href="../javadoc/3.4.3/org/jgap/BulkFitnessFunction.html">org.jgap.BulkFitnessFunction</a>
+    class. </p>
+  </li>
+  <li><p class="text">Does JGAP support real-valued fitness values or alleles? </p>
+    <p class="text">Yes, double typed fitness values have been introduced with release 1.1.
+    Before that the type was int.</p>
+  </li>
+  <li><p class="text">How can I select the top n performers of a population? </p>
+    <p class="text">During evolution, to select the best performing
+    chromosomes for the next generation, use the <font face="Courier New">org.jgap.impl.BestChromosomesSelector</font>.
+    See <font face="Courier New">org.jgap.impl.DefaultConfiguration</font> for
+    an example.</p>
+    <p class="text">To select the top n performers after evolution, you could
+    use <font face="Courier New">Genotype.getPopulation.toChromosomes()</font>.
+    After that, sort the returned array of chromosomes via <font face="Courier New">Arrays.sort(chromosomesArrayFromPopulation,
+    yourComparator)</font>. <font face="Courier New">yourComparator</font> sorts
+    the array of chromosomes by the fitness value of each chromosome.</p>
+  </li>
+  <li><p class="text">How do I know when my GA application is
+    'finished'?
+    </p>
+    <p class="text">There are many possible criteria for stopping an algorithm
+    from continued evolution, including
+    </p>
+    <ul><li><p class="text">number of evolutions
+    </p></li>
+    <li><p class="text">time duration</p></li>
+    <li><p class="text">whether fitness is continuing to improve</p></li></ul>
+    <p class="text">The first criteria is easy, just write: <font face="Courier New">Genotype</font><font face="Courier New">.evolve(numEvolutions);<br>
+    </font>Please notice: You can also use the evolve method without any
+    parameter. In that case, only one evolution is executed. This makes sense if
+    you build a loop around this statement and check for any criteria to exit
+    evolution yourself.</p>
+    <p class="text">For the other two, check out the <a href="../javadoc/3.4.4/org/jgap/audit/IEvolutionMonitor.html"> IEvolutionMonitor</a>
+    implementations <a href="../javadoc/3.4.4/org/jgap/audit/FitnessImprovementMonitor.html">FitnessImprovementMonitor</a>,
+    <a href="../javadoc/3.4.4/org/jgap/audit/TimedMonitor.html"> TimedMonitor</a> and
+    <a href="../javadoc/3.4.4/org/jgap/audit/ChainedMonitors.html"> ChainedMonitors</a>
+    to use with a call like <font face="Courier New">Genotype</font><font face="Courier New">.evolve(monitor);</font></p>
+  </li>
+  <li><p class="text">Does JGAP support multiple threads? </p>
+    <p class="text">JGAP does support multi-threaded computation, see the
+    example in package <font face="Courier New">examples.simpleBooleanThreaded</font>.
+    The main class to start there is <font face="Courier New">SimpleExample</font>. </p>
+  </li>
+  <li><p class="text">I notice that sometimes the fittest chromosome doesn't get selected
+    for the next generation. What's up with that? </p>
+    <p class="text">Natural selection in JGAP is statistical, so chromosomes that are more
+    fit have a better statistical chance of being selected over chromosomes that are less fit,
+    but it's not guaranteed. This is much like nature, where even the fittest of us can
+    sometimes be unlucky! </p>
+    <p class="text">Incidentally, JGAP is designed to be very pluggable, and it's possible
+    for you to write your own natural selector and plug it into JGAP in place of the default
+    version, if that better suits your needs. </p>
+  </li>
+  <li><p class="text">Why aren't the chromosomes in my population ever candidates for
+    natural selection? </p>
+    <p class="text">This should not happen if you properly use a
+    NaturalSelector resp. if this selector is implemented correctly. The
+    reproduction operator is deprecated in newer JGAP versions due to
+    performance reasons and due to the fact that the current architecture
+    delivers such functionality itself. </p>
+    <p class="text">Has anyone used JGAP in combination with the JOONE neural networks
+    package? </p>
+    <p class="text">Yes, as a matter of a fact there is a whole open-source project
+    dedicated to integration of JGAP with JOONE! You can find out more about the
+    JOONEGAP
+    project on their <a href="http://joonegap.sourceforge.net/">homepage</a>. </p>
+    <p class="text">Additionally (among others), there is a dissertation about Genetic
+    Algorithms playing together with Neural Nets to play Backgammon!</p>
+  </li>
+  <li><p class="text">I have a problem executing commands under Linux!<br>
+    <br>
+    Maybe you have used the backslash in path specifications (or you did not
+    adapt&nbsp; a batch file given with JGAP for execution under Microsoft
+    Windows). The Backslash is mainly used under Windows. Please use the simple
+    slash under Linux and similar operating systems.&gt;<br>
+    Please also consider changing the delimiter semicolon to a double colon! </p>
+  </li>
+
+  <li><p class="text">What is the difference between Genetic Algorithms and
+    Genetic Programming?<br>
+    <br>
+    Instead of giving a complex answer, we advice you to check out the Mona Lisa
+    Painting Problem. It is implemented with GA as well as with GP. The GA
+    version is in package <a href="../../javadoc/3.4.3/examples/monalisa/package-summary.html">examples.monalisa</a>,
+    the GP version in package <a href="../../javadoc/3.4.3/examples/gp/monalisa/package-summary.html">examples.gp.monalisa</a>. </p>
+  </li>
+
+  <li><p class="text">Does JGAP support elitism?<br>
+    <br>
+    Yes: Elitism is preferring to select the fitter individuums for the next
+    generation. One implementation can be found with class
+    org.jgap.impl.BestChromosomesSelector. Another selection operator is
+    WeightedRouletteSelector in the same package. </p>
+  </li>
+
+  <li><p class="text">Why are genetic operators executed more often than
+    expected?<br>
+    <br>
+    One may expect the mutation operator, e.g.,&nbsp; to be executed N x M&nbsp;
+    times, with N = number of individuals and M the number of evolutions. In
+    JGAP, the real number of mutations may be higher. The reason for that will
+    be documents here soon. It has to do with runtime optimization. </p>
+  </li>
+
+</ol>
+
+<p class="copyright">Copyright © 2002-2012 <a href="http://www.doktor-meffert.com" target="_blank">Klaus
+Meffert</a> / Neil Rotstan. All rights
+reserved. </p>
+
+<hr>
+<a class="homeLink" href="../index.html">
+
+<p align="center">[JGAP Home]</a> <br>
+<a href="http://sourceforge.net/projects/jgap"><img
+src="http://sourceforge.net/sflogo.php?group_id=11618&amp;type=5" width="210" height="62"
+border="0" alt="SourceForge Logo"></a> </p>
+</body>
+</html>
